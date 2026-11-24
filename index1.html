@@ -1,0 +1,3075 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#09090B" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>P-Cast 3.0 — Private Audio Lounge</title>
+
+  <!-- Dynamisches PWA-Manifest per JS -->
+  <link id="pwa-manifest-link" rel="manifest" href="" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Playfair Display & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            serif: ['"Playfair Display"', 'serif'],
+          },
+          colors: {
+            obsidian: {
+              950: '#060608',
+              900: '#09090B',
+              850: '#121216',
+              800: '#18181D',
+              700: '#222229',
+            },
+            gold: {
+              300: '#F7ECC8',
+              400: '#F3E5AB',
+              500: '#D4AF37',
+              600: '#B59224',
+              700: '#8A6D17',
+            },
+          },
+          boxShadow: {
+            'gold-glow': '0 0 32px -4px rgba(212, 175, 55, 0.25)',
+            'gold-sm': '0 4px 20px -2px rgba(212, 175, 55, 0.15)',
+          }
+        },
+      },
+    };
+  </script>
+
+  <style>
+    :root {
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    body {
+      background-color: #09090B;
+      color: #F4F4F6;
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #09090B;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #222229;
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #D4AF37;
+    }
+
+    .glass-panel {
+      background: rgba(18, 18, 22, 0.88);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      border-color: rgba(212, 175, 55, 0.22);
+    }
+
+    .glass-card {
+      background: linear-gradient(155deg, rgba(24, 24, 29, 0.92) 0%, rgba(12, 12, 15, 0.97) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(212, 175, 55, 0.36);
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.85), 0 0 20px -8px rgba(212, 175, 55, 0.16);
+    }
+
+    .vip-card {
+      border-color: rgba(212, 175, 55, 0.28);
+      background: linear-gradient(155deg, rgba(28, 25, 20, 0.95) 0%, rgba(12, 12, 15, 0.98) 100%);
+    }
+
+    .gold-gradient-text {
+      background: linear-gradient(135deg, #F7ECC8 0%, #D4AF37 55%, #B59224 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .gold-btn {
+      background: linear-gradient(135deg, #F3E5AB 0%, #D4AF37 52%, #B89323 100%);
+      color: #09090B;
+      font-weight: 600;
+      transition: all 0.18s ease;
+    }
+    .gold-btn:hover:not(:disabled) {
+      filter: brightness(1.07);
+      box-shadow: 0 0 24px rgba(212, 175, 55, 0.34);
+    }
+    .gold-btn:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+    .gold-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    input[type="range"].gold-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(255, 255, 255, 0.12);
+      height: 5px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    input[type="range"].gold-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #F3E5AB;
+      border: 2px solid #D4AF37;
+      box-shadow: 0 0 10px rgba(212, 175, 55, 0.65);
+      transition: transform 0.15s ease;
+    }
+    input[type="range"].gold-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.22);
+    }
+
+    @keyframes eqPulse {
+      0%, 100% { height: 4px; }
+      50% { height: 15px; }
+    }
+    .eq-bar {
+      width: 2.5px;
+      background-color: #D4AF37;
+      border-radius: 2px;
+      animation: eqPulse 0.85s ease-in-out infinite;
+    }
+    .eq-bar:nth-child(2) { animation-delay: 0.2s; }
+    .eq-bar:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, #121216 25%, #1d1d24 50%, #121216 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Safe-Area & Player-Abstände für Smartphones, Tablets und Foldables */
+    .main-bottom-pad {
+      padding-bottom: calc(164px + var(--safe-bottom));
+    }
+    @media (min-width: 1024px) {
+      .main-bottom-pad {
+        padding-bottom: calc(116px + var(--safe-bottom));
+      }
+    }
+    .mobile-nav-bar {
+      padding-bottom: calc(6px + var(--safe-bottom));
+    }
+    .player-bar-mobile-pos {
+      bottom: calc(60px + var(--safe-bottom));
+    }
+    @media (min-width: 1024px) {
+      .player-bar-mobile-pos {
+        bottom: var(--safe-bottom);
+      }
+    }
+  </style>
+</head>
+<body class="bg-obsidian-900 text-zinc-100 antialiased selection:bg-gold-500 selection:text-obsidian-950">
+
+  <!-- Subtiles Luxus-Ambient-Licht -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div class="absolute -top-44 -left-44 w-[480px] h-[480px] bg-gold-500/10 rounded-full blur-[150px]"></div>
+    <div class="absolute top-1/3 -right-36 w-96 h-96 bg-gold-400/5 rounded-full blur-[130px]"></div>
+  </div>
+
+  <!-- Toast-Benachrichtigungen -->
+  <div id="toast-container" class="fixed top-5 right-5 z-[120] flex flex-col gap-2.5 max-w-sm w-[calc(100%-2.5rem)] pointer-events-none"></div>
+
+  <!-- Haupt-Container -->
+  <div class="relative z-10 min-h-screen flex flex-col lg:flex-row main-bottom-pad">
+
+    <!-- DESKTOP SIDEBAR -->
+    <aside class="hidden lg:flex lg:flex-col lg:w-72 lg:fixed lg:inset-y-0 glass-panel border-r border-gold-500/20 px-6 py-7 justify-between">
+      <div>
+        <!-- Marken-Logo -->
+        <div class="flex items-center justify-between mb-8">
+          <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-gold-400 via-gold-500 to-gold-700 p-[1px] shadow-gold-glow">
+              <div class="w-full h-full bg-obsidian-950 rounded-2xl flex items-center justify-center">
+                <i data-lucide="radio" class="w-5 h-5 text-gold-400"></i>
+              </div>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 class="font-serif text-2xl font-bold tracking-tight gold-gradient-text">P-Cast</h1>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-gold-500/15 border border-gold-500/30 text-gold-300 font-semibold">3.0</span>
+              </div>
+              <p class="text-[10px] uppercase tracking-[0.22em] text-zinc-400">Private Audio Lounge</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="space-y-1.5" id="desktop-nav" aria-label="Hauptnavigation">
+          <button data-view="home" class="nav-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all bg-gold-500/15 text-gold-300 border border-gold-500/30">
+            <span class="flex items-center gap-3">
+              <i data-lucide="sparkles" class="w-4 h-4 text-gold-400"></i>
+              Neue Folgen
+            </span>
+            <span id="badge-new-count" class="text-xs px-2 py-0.5 rounded-full bg-gold-500 text-obsidian-950 font-bold">0</span>
+          </button>
+
+          <button data-view="favorites" class="nav-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:text-zinc-100 hover:bg-white/5 transition-all">
+            <span class="flex items-center gap-3">
+              <i data-lucide="crown" class="w-4 h-4"></i>
+              Favoriten & Abos
+            </span>
+            <span id="badge-fav-count" class="text-xs text-zinc-500">0</span>
+          </button>
+
+          <button data-view="history" class="nav-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:text-zinc-100 hover:bg-white/5 transition-all">
+            <span class="flex items-center gap-3">
+              <i data-lucide="history" class="w-4 h-4"></i>
+              Verlauf
+            </span>
+            <span id="badge-history-count" class="text-xs text-zinc-500">0</span>
+          </button>
+
+          <button data-view="discover" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:text-zinc-100 hover:bg-white/5 transition-all">
+            <i data-lucide="compass" class="w-4 h-4"></i>
+            Entdecken & Suche
+          </button>
+
+          <button data-view="offline" class="nav-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:text-zinc-100 hover:bg-white/5 transition-all">
+            <span class="flex items-center gap-3">
+              <i data-lucide="hard-drive-download" class="w-4 h-4"></i>
+              Offline & Downloads
+            </span>
+            <span id="badge-offline-count" class="text-xs text-zinc-500">0</span>
+          </button>
+
+          <button data-view="queue" class="nav-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:text-zinc-100 hover:bg-white/5 transition-all">
+            <span class="flex items-center gap-3">
+              <i data-lucide="list-music" class="w-4 h-4"></i>
+              Warteschlange
+            </span>
+            <span id="badge-queue-count" class="text-xs text-zinc-500">0</span>
+          </button>
+        </nav>
+
+        <!-- RSS / OPML & PWA Installation -->
+        <div class="mt-6 pt-5 border-t border-white/10 space-y-2.5">
+          <button onclick="openRssModal()" class="w-full py-3 px-4 rounded-xl border border-gold-500/35 bg-gold-500/5 hover:bg-gold-500/15 text-gold-300 text-xs font-semibold flex items-center justify-center gap-2 transition-all">
+            <i data-lucide="rss" class="w-4 h-4 text-gold-400"></i>
+            + RSS-Feed / OPML Import
+          </button>
+
+          <button id="btn-install-pwa-desktop" onclick="triggerPwaInstall()" class="hidden w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-gold-500/15 border border-white/10 text-zinc-200 hover:text-gold-300 text-xs font-medium flex items-center justify-center gap-2 transition-all">
+            <i data-lucide="smartphone" class="w-3.5 h-3.5 text-gold-400"></i>
+            Als App installieren
+          </button>
+        </div>
+      </div>
+
+      <!-- Feed-Cache Status & Aktualisieren -->
+      <div class="p-4 rounded-2xl bg-obsidian-950/90 border border-gold-500/15 space-y-2.5">
+        <div class="flex items-center justify-between text-xs gap-2">
+          <span class="text-zinc-400 shrink-0">Feed-Status</span>
+          <span id="sidebar-sync-time" class="text-gold-300 font-medium text-[11px] truncate">Bereit</span>
+        </div>
+        <button onclick="refreshAllFeeds(true)" id="btn-refresh-sidebar" class="w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-gold-500/15 border border-white/5 hover:border-gold-500/30 text-xs text-zinc-200 flex items-center justify-center gap-2 transition">
+          <i data-lucide="refresh-cw" id="icon-refresh-sidebar" class="w-3.5 h-3.5 text-gold-400"></i>
+          <span id="label-refresh-sidebar">Feeds aktualisieren</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MOBILE / TABLET HEADER -->
+    <header class="lg:hidden sticky top-0 z-30 glass-panel border-b border-gold-500/20 px-4 py-3 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-gold-400 to-gold-600 p-[1px] shrink-0">
+          <div class="w-full h-full bg-obsidian-950 rounded-xl flex items-center justify-center">
+            <i data-lucide="radio" class="w-4 h-4 text-gold-400"></i>
+          </div>
+        </div>
+        <div class="truncate">
+          <span class="font-serif text-xl font-bold gold-gradient-text">P-Cast</span>
+          <span class="text-[9px] ml-1 px-1.5 py-0.5 rounded bg-gold-500/15 text-gold-300 font-bold align-middle">3.0</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button id="btn-install-pwa-mobile" onclick="triggerPwaInstall()" class="hidden px-2.5 py-2 rounded-xl bg-gold-500/15 border border-gold-500/30 text-gold-300 text-[11px] font-semibold">
+          App
+        </button>
+        <button onclick="refreshAllFeeds(true)" id="btn-refresh-mobile" aria-label="Alle Feeds aktualisieren" class="p-2.5 rounded-xl bg-white/5 text-zinc-300 hover:text-gold-400 flex items-center gap-1">
+          <i data-lucide="refresh-cw" id="icon-refresh-mobile" class="w-4 h-4"></i>
+          <span id="label-refresh-mobile" class="text-[10px] font-mono text-gold-300"></span>
+        </button>
+        <button onclick="openRssModal()" class="px-3 py-2 rounded-xl border border-gold-500/40 bg-gold-500/10 text-gold-300 text-xs font-semibold flex items-center gap-1">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i> RSS
+        </button>
+      </div>
+    </header>
+
+    <!-- HAUPTBEREICH -->
+    <main class="flex-1 lg:pl-72 min-w-0">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-10">
+
+        <!-- VIEW 1: NEUE FOLGEN DEINER FAVORITEN -->
+        <section id="view-home" class="view-section space-y-7">
+          <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/10 pb-6">
+            <div>
+              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/10 border border-gold-500/25 text-gold-300 text-xs font-medium mb-3">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-gold-400"></i>
+                VIP & Favoriten Feed
+              </div>
+              <h2 class="font-serif text-3xl sm:text-4xl font-bold text-white tracking-tight">
+                Neue Folgen deiner <span class="gold-gradient-text">Favoriten</span>
+              </h2>
+              <p class="text-zinc-400 text-sm sm:text-base mt-1.5">
+                VIP-Favoriten zuerst – mit Kapitelmarken, Offline-Speicher, Stimmen-Boost und Stille-Kürzung.
+              </p>
+            </div>
+
+            <div class="flex items-center gap-2.5 self-start md:self-auto shrink-0">
+              <button onclick="playAllNew()" class="gold-btn px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 shadow-gold-sm">
+                <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+                Alle abspielen
+              </button>
+              <button onclick="switchView('discover')" class="px-4 py-2.5 rounded-xl bg-obsidian-800 hover:bg-obsidian-700 border border-white/10 text-sm text-zinc-200 flex items-center gap-2 transition">
+                <i data-lucide="search" class="w-4 h-4 text-gold-400"></i>
+                Suche
+              </button>
+            </div>
+          </div>
+
+          <!-- Favoriten-Schnellleiste -->
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs uppercase tracking-widest text-zinc-400 font-semibold">Deine Favoriten (VIP oben)</span>
+              <button onclick="switchView('favorites')" class="text-xs text-gold-400 hover:text-gold-300 transition">Favoriten & Abos verwalten →</button>
+            </div>
+            <div id="home-favorites-strip" class="flex items-center gap-3.5 overflow-x-auto pb-2 no-scrollbar"></div>
+          </div>
+
+          <!-- Smart-Filter Pills -->
+          <div class="space-y-3">
+            <div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar" id="smart-filter-bar">
+              <button data-filter="unplayed" onclick="setHomeFilter('unplayed')" class="filter-pill px-3.5 py-2 rounded-xl text-xs font-semibold bg-gold-500/20 text-gold-300 border border-gold-500/35 shrink-0 transition">
+                Alle Neuen
+              </button>
+              <button data-filter="week" onclick="setHomeFilter('week')" class="filter-pill px-3.5 py-2 rounded-xl text-xs font-medium bg-obsidian-850 text-zinc-400 hover:text-white border border-white/5 shrink-0 transition">
+                Heute / Diese Woche
+              </button>
+              <button data-filter="inprogress" onclick="setHomeFilter('inprogress')" class="filter-pill px-3.5 py-2 rounded-xl text-xs font-medium bg-obsidian-850 text-zinc-400 hover:text-white border border-white/5 shrink-0 transition">
+                Angefangen (Weiterhören)
+              </button>
+              <button data-filter="short" onclick="setHomeFilter('short')" class="filter-pill px-3.5 py-2 rounded-xl text-xs font-medium bg-obsidian-850 text-zinc-400 hover:text-white border border-white/5 shrink-0 transition">
+                Kurz (&lt; 30 Min.)
+              </button>
+              <button data-filter="long" onclick="setHomeFilter('long')" class="filter-pill px-3.5 py-2 rounded-xl text-xs font-medium bg-obsidian-850 text-zinc-400 hover:text-white border border-white/5 shrink-0 transition">
+                Lang (&gt; 60 Min.)
+              </button>
+              <button data-filter="offline" onclick="setHomeFilter('offline')" class="filter-pill px-3.5 py-2 rounded-xl text-xs font-medium bg-obsidian-850 text-zinc-400 hover:text-white border border-white/5 shrink-0 transition">
+                Offline gespeichert
+              </button>
+              <button data-filter="all" onclick="setHomeFilter('all')" class="filter-pill px-3.5 py-2 rounded-xl text-xs font-medium bg-obsidian-850 text-zinc-400 hover:text-white border border-white/5 shrink-0 transition">
+                Alle inkl. Gehörte
+              </button>
+            </div>
+
+            <div class="flex items-center justify-between text-xs text-zinc-400 gap-2">
+              <span id="home-episode-counter">Lade Episoden...</span>
+              <span id="refresh-status-inline" class="text-gold-400/90 hidden items-center gap-1.5 font-mono">
+                <span class="w-2 h-2 rounded-full bg-gold-400 animate-ping"></span>
+                <span id="refresh-progress-text">Aktualisiere Feeds...</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Episoden-Liste -->
+          <div id="home-episodes-list" class="space-y-4"></div>
+        </section>
+
+        <!-- VIEW 2: FAVORITEN & ALLE ABOS -->
+        <section id="view-favorites" class="view-section hidden space-y-7">
+          <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/10 pb-6">
+            <div>
+              <span class="text-xs uppercase tracking-[0.2em] text-gold-400 font-semibold">Abonnements & VIP-Steuerung</span>
+              <h2 class="font-serif text-3xl sm:text-4xl font-bold text-white mt-1">Favoriten & Abos</h2>
+              <p class="text-zinc-400 text-sm mt-1">Wechsle zwischen deinen VIP-Favoriten und allen abonnierten Feeds, pinne Top-Shows oder verwalte Einzel-Feeds.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="exportOpml()" class="px-4 py-2.5 rounded-xl bg-obsidian-800 hover:bg-obsidian-700 border border-white/10 text-xs font-medium text-zinc-200 flex items-center gap-2">
+                <i data-lucide="download" class="w-4 h-4 text-gold-400"></i>
+                OPML Export
+              </button>
+              <button onclick="openRssModal()" class="gold-btn px-4 py-2.5 rounded-xl text-xs flex items-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                Feed hinzufügen
+              </button>
+            </div>
+          </div>
+
+          <!-- Umschalter VIP / Favoriten vs. Alle Abos -->
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="inline-flex p-1 rounded-2xl bg-obsidian-850 border border-white/10" role="tablist">
+              <button id="tab-sub-vip" onclick="setSubscriptionTab('vip')" class="px-4 py-2 rounded-xl text-xs font-semibold bg-gold-500/20 text-gold-300 border border-gold-500/35 transition">
+                VIP / Favoriten
+              </button>
+              <button id="tab-sub-all" onclick="setSubscriptionTab('all')" class="px-4 py-2 rounded-xl text-xs font-medium text-zinc-400 hover:text-white transition">
+                Alle Abos
+              </button>
+            </div>
+            <span id="subscriptions-tab-summary" class="text-xs text-zinc-400"></span>
+          </div>
+
+          <div id="favorites-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5"></div>
+        </section>
+
+        <!-- VIEW 3: VERLAUF / ZULETZT GEHÖRT -->
+        <section id="view-history" class="view-section hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-6">
+            <div>
+              <span class="text-xs uppercase tracking-[0.2em] text-gold-400 font-semibold">Hör-Chronik</span>
+              <h2 class="font-serif text-3xl sm:text-4xl font-bold text-white mt-1">Verlauf & Zuletzt gehört</h2>
+              <p class="text-zinc-400 text-sm mt-1">Angefangene Episoden mit Fortschrittsbalken sowie kürzlich beendete Folgen.</p>
+            </div>
+            <button onclick="clearHistory()" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-red-500/20 hover:text-red-300 border border-white/10 text-xs text-zinc-300 transition self-start sm:self-auto">
+              Verlauf leeren
+            </button>
+          </div>
+
+          <div id="history-episodes-list" class="space-y-4"></div>
+        </section>
+
+        <!-- VIEW 4: ENTDECKEN & SUCHE -->
+        <section id="view-discover" class="view-section hidden space-y-8">
+          <div class="border-b border-white/10 pb-6">
+            <span class="text-xs uppercase tracking-[0.2em] text-gold-400 font-semibold">Weltweites Verzeichnis</span>
+            <h2 class="font-serif text-3xl sm:text-4xl font-bold text-white mt-1">Podcasts entdecken</h2>
+            <p class="text-zinc-400 text-sm mt-1">Durchsuche offene Podcasts oder füge jeden beliebigen RSS-Feed direkt hinzu.</p>
+
+            <form onsubmit="handleSearchSubmit(event)" class="mt-6 flex flex-col sm:flex-row gap-3">
+              <div class="relative flex-1">
+                <i data-lucide="search" class="w-5 h-5 text-gold-400 absolute left-4 top-1/2 -translate-y-1/2"></i>
+                <input
+                  id="search-input"
+                  type="text"
+                  placeholder="Nach Podcast, Thema oder Host suchen (z. B. Lage der Nation, Zeit, Security)..."
+                  class="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-obsidian-850 border border-gold-500/25 focus:border-gold-400 focus:outline-none text-sm text-white placeholder-zinc-500 transition"
+                />
+              </div>
+              <button type="submit" class="gold-btn px-7 py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2 shrink-0">
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                Suchen
+              </button>
+            </form>
+
+            <div class="flex flex-wrap items-center gap-2 mt-4">
+              <span class="text-xs text-zinc-500 mr-1">Themen:</span>
+              <button onclick="quickSearch('Nachrichten & Politik')" class="px-3 py-1.5 rounded-full bg-white/5 hover:bg-gold-500/15 hover:text-gold-300 border border-white/10 text-xs text-zinc-300 transition">Nachrichten & Politik</button>
+              <button onclick="quickSearch('Tech & Cybersecurity')" class="px-3 py-1.5 rounded-full bg-white/5 hover:bg-gold-500/15 hover:text-gold-300 border border-white/10 text-xs text-zinc-300 transition">Tech & Sicherheit</button>
+              <button onclick="quickSearch('True Crime Deutsch')" class="px-3 py-1.5 rounded-full bg-white/5 hover:bg-gold-500/15 hover:text-gold-300 border border-white/10 text-xs text-zinc-300 transition">True Crime</button>
+              <button onclick="quickSearch('Wissen & Geschichte')" class="px-3 py-1.5 rounded-full bg-white/5 hover:bg-gold-500/15 hover:text-gold-300 border border-white/10 text-xs text-zinc-300 transition">Wissen & Geschichte</button>
+              <button onclick="quickSearch('Comedy Deutschland')" class="px-3 py-1.5 rounded-full bg-white/5 hover:bg-gold-500/15 hover:text-gold-300 border border-white/10 text-xs text-zinc-300 transition">Comedy</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h3 id="discover-section-title" class="text-lg font-semibold text-white">Kuratierte Top-Podcasts</h3>
+              <span id="discover-status" class="text-xs text-zinc-400"></span>
+            </div>
+            <div id="discover-results" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+          </div>
+        </section>
+
+        <!-- VIEW 5: OFFLINE & DOWNLOADS -->
+        <section id="view-offline" class="view-section hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-6">
+            <div>
+              <span class="text-xs uppercase tracking-[0.2em] text-gold-400 font-semibold">Lokaler Cache-Speicher</span>
+              <h2 class="font-serif text-3xl sm:text-4xl font-bold text-white mt-1">Offline & Downloads</h2>
+              <p class="text-zinc-400 text-sm mt-1">Lokal gespeicherte Episoden – jederzeit ohne Internetverbindung abspielbar.</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="px-4 py-2 rounded-xl bg-obsidian-850 border border-gold-500/25 text-xs">
+                <span class="text-zinc-400">Belegt: </span>
+                <span id="offline-storage-size" class="text-gold-300 font-bold font-mono">0 MB</span>
+              </div>
+              <button onclick="clearAllOfflineDownloads()" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-red-500/20 hover:text-red-300 border border-white/10 text-xs text-zinc-300 transition">
+                Alle löschen
+              </button>
+            </div>
+          </div>
+
+          <div id="offline-episodes-list" class="space-y-4"></div>
+        </section>
+
+        <!-- VIEW 6: WARTESCHLANGE -->
+        <section id="view-queue" class="view-section hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-6">
+            <div>
+              <span class="text-xs uppercase tracking-[0.2em] text-gold-400 font-semibold">Als Nächstes</span>
+              <h2 class="font-serif text-3xl sm:text-4xl font-bold text-white mt-1">Warteschlange</h2>
+              <p class="text-zinc-400 text-sm mt-1">Sortiere deine Episoden nach oben oder unten oder leere die Liste.</p>
+            </div>
+            <button onclick="clearQueue()" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-red-500/20 hover:text-red-300 border border-white/10 text-xs text-zinc-300 transition self-start sm:self-auto">
+              Warteschlange leeren
+            </button>
+          </div>
+
+          <div id="queue-list" class="space-y-3"></div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- MOBILE BOTTOM NAVIGATION -->
+  <nav class="lg:hidden fixed bottom-0 inset-x-0 z-40 glass-panel border-t border-gold-500/25 px-1 pt-1.5 mobile-nav-bar flex items-center justify-around" id="mobile-nav" aria-label="Mobile Navigation">
+    <button data-view="home" class="nav-btn-mobile flex flex-col items-center gap-1 py-1.5 px-2 rounded-xl text-gold-400">
+      <i data-lucide="sparkles" class="w-5 h-5"></i>
+      <span class="text-[10px] font-semibold">Neu</span>
+    </button>
+    <button data-view="favorites" class="nav-btn-mobile flex flex-col items-center gap-1 py-1.5 px-2 rounded-xl text-zinc-400">
+      <i data-lucide="crown" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium">Abos</span>
+    </button>
+    <button data-view="history" class="nav-btn-mobile flex flex-col items-center gap-1 py-1.5 px-2 rounded-xl text-zinc-400">
+      <i data-lucide="history" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium">Verlauf</span>
+    </button>
+    <button data-view="discover" class="nav-btn-mobile flex flex-col items-center gap-1 py-1.5 px-2 rounded-xl text-zinc-400">
+      <i data-lucide="compass" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium">Suche</span>
+    </button>
+    <button data-view="queue" class="nav-btn-mobile flex flex-col items-center gap-1 py-1.5 px-2 rounded-xl text-zinc-400 relative">
+      <i data-lucide="list-music" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium">Liste</span>
+      <span id="mobile-queue-dot" class="hidden absolute top-1 right-1.5 w-2 h-2 rounded-full bg-gold-500"></span>
+    </button>
+  </nav>
+
+  <!-- PERSISTENT LUXURY AUDIO PLAYER BAR -->
+  <div id="player-bar" class="fixed player-bar-mobile-pos inset-x-0 lg:left-72 z-40 glass-panel border-t border-gold-500/35 shadow-[0_-12px_40px_rgba(0,0,0,0.9)] transition-all">
+    <div class="w-full h-1 bg-white/10 cursor-pointer relative group" id="player-top-progress-wrap" onclick="seekFromTopBar(event)">
+      <div id="player-top-progress" class="h-full bg-gradient-to-r from-gold-400 via-gold-500 to-gold-300 w-0 transition-all duration-150"></div>
+    </div>
+
+    <div class="max-w-6xl mx-auto px-3.5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2.5 sm:gap-5">
+      <!-- Links: Cover & Titel -->
+      <div class="flex items-center gap-3 min-w-0 flex-1 sm:flex-initial sm:w-72 cursor-pointer" onclick="togglePlayerDrawer()">
+        <div class="relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden border border-gold-500/35 shrink-0 bg-obsidian-800">
+          <img id="player-cover" src="https://placehold.co/200x200/18181D/D4AF37?text=P-Cast" alt="Cover" class="w-full h-full object-cover" />
+          <div id="player-eq" class="hidden absolute inset-0 bg-black/60 flex items-center justify-center gap-1">
+            <span class="eq-bar"></span>
+            <span class="eq-bar"></span>
+            <span class="eq-bar"></span>
+          </div>
+        </div>
+        <div class="min-w-0">
+          <p id="player-title" class="text-xs sm:text-sm font-semibold text-white truncate">Bereit für deine Favoriten</p>
+          <p id="player-podcast" class="text-[11px] sm:text-xs text-gold-400/90 truncate">Wähle eine Episode zum Starten</p>
+        </div>
+      </div>
+
+      <!-- Mitte: Transport-Steuerung & Zeitstrahl -->
+      <div class="flex flex-col items-center flex-1 max-w-xl">
+        <div class="flex items-center gap-2.5 sm:gap-5">
+          <button onclick="skipSeconds(-15)" title="15 Sekunden zurück (Pfeil links)" class="p-2 text-zinc-400 hover:text-gold-300 transition flex items-center gap-0.5 text-xs">
+            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+            <span class="hidden sm:inline text-[10px]">15</span>
+          </button>
+
+          <button id="btn-play-pause" onclick="togglePlayPause()" title="Abspielen / Pause (Leertaste)" class="w-10 h-10 sm:w-11 sm:h-11 rounded-full gold-btn flex items-center justify-center shadow-gold-glow">
+            <i id="icon-play-pause" data-lucide="play" class="w-5 h-5 fill-current ml-0.5"></i>
+          </button>
+
+          <button onclick="skipSeconds(30)" title="30 Sekunden vor (Pfeil rechts)" class="p-2 text-zinc-400 hover:text-gold-300 transition flex items-center gap-0.5 text-xs">
+            <span class="hidden sm:inline text-[10px]">30</span>
+            <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div class="hidden sm:flex items-center gap-3 w-full mt-1.5">
+          <span id="player-current-time" class="text-[11px] font-mono text-zinc-400 w-12 text-right">00:00</span>
+          <input id="player-seek" type="range" min="0" max="100" value="0" oninput="handleSeekInput(this.value)" class="gold-slider flex-1" />
+          <span id="player-duration" class="text-[11px] font-mono text-zinc-400 w-12">00:00</span>
+        </div>
+      </div>
+
+      <!-- Rechts: Speed, Audio-FX, Sleep-Timer & Drawer -->
+      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <button id="btn-speed" onclick="cyclePlaybackSpeed()" title="Wiedergabegeschwindigkeit" class="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-gold-500/15 border border-white/10 text-xs font-mono font-semibold text-gold-300 transition">
+          1.0x
+        </button>
+
+        <button id="btn-voice-boost-bar" onclick="toggleVoiceBoost()" title="Stimmen-Boost (Klangoptimierung)" class="hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-gold-500/15 border border-white/10 text-xs text-zinc-300 transition">
+          <i data-lucide="mic" class="w-3.5 h-3.5 text-gold-400"></i>
+        </button>
+
+        <button id="btn-sleep" onclick="cycleSleepTimer()" title="Sleep-Timer" class="hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-gold-500/15 border border-white/10 text-xs text-zinc-300 transition">
+          <i data-lucide="moon" class="w-3.5 h-3.5 text-gold-400"></i>
+          <span id="sleep-label">Aus</span>
+        </button>
+
+        <div class="hidden xl:flex items-center gap-2 pl-1">
+          <i data-lucide="volume-2" class="w-4 h-4 text-zinc-400"></i>
+          <input id="player-volume" type="range" min="0" max="1" step="0.05" value="0.95" oninput="setVolume(this.value)" class="gold-slider w-20" />
+        </div>
+
+        <button onclick="togglePlayerDrawer()" title="Kapitel, Klang & Shownotes" class="p-2 rounded-lg bg-white/5 hover:bg-gold-500/15 text-zinc-300 hover:text-gold-300 transition">
+          <i data-lucide="chevron-up" id="drawer-chevron" class="w-4 h-4 transition-transform"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPANDIERBARE PLAYER-DETAILANSICHT -->
+  <div id="player-drawer" class="fixed inset-0 z-50 hidden bg-obsidian-950/90 backdrop-blur-2xl flex flex-col justify-end sm:justify-center items-center p-0 sm:p-6">
+    <div class="w-full max-w-2xl bg-obsidian-900 border border-gold-500/35 rounded-t-3xl sm:rounded-3xl p-6 sm:p-8 max-h-[90vh] flex flex-col shadow-2xl">
+      <div class="flex items-center justify-between pb-4 border-b border-white/10">
+        <span class="text-xs uppercase tracking-[0.2em] text-gold-400 font-semibold">Studio-Player & Kapitel</span>
+        <button onclick="togglePlayerDrawer()" aria-label="Player-Ansicht schließen" class="p-2 rounded-full bg-white/5 hover:bg-white/10 text-zinc-300">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto py-5 space-y-6 pr-1">
+        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
+          <img id="drawer-cover" src="https://placehold.co/300x300/18181D/D4AF37?text=P-Cast" alt="Cover" class="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover border border-gold-500/35 shadow-gold-glow shrink-0" />
+          <div class="space-y-1.5 flex-1 min-w-0">
+            <span id="drawer-podcast" class="text-xs font-semibold uppercase tracking-wider text-gold-400">Podcast</span>
+            <h3 id="drawer-title" class="font-serif text-xl sm:text-2xl font-bold text-white leading-snug">Keine Episode aktiv</h3>
+            <p id="drawer-meta" class="text-xs text-zinc-400">—</p>
+          </div>
+        </div>
+
+        <!-- Mobile Zeitstrahl -->
+        <div class="sm:hidden space-y-1.5 bg-obsidian-850 p-4 rounded-2xl border border-white/5">
+          <input id="drawer-seek" type="range" min="0" max="100" value="0" oninput="handleSeekInput(this.value)" class="gold-slider w-full" />
+          <div class="flex justify-between text-xs font-mono text-zinc-400">
+            <span id="drawer-current-time">00:00</span>
+            <span id="drawer-duration">00:00</span>
+          </div>
+        </div>
+
+        <!-- Klangoptimierung & Sleep-Timer -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <button id="drawer-voice-boost" onclick="toggleVoiceBoost()" class="p-3 rounded-2xl bg-obsidian-850 border border-white/10 hover:border-gold-500/35 flex items-center justify-between text-left transition">
+            <div>
+              <p class="text-xs font-semibold text-white flex items-center gap-1.5">
+                <i data-lucide="mic" class="w-3.5 h-3.5 text-gold-400"></i> Stimmen-Boost
+              </p>
+              <p class="text-[10px] text-zinc-400 mt-0.5">Kompressor & Präsenz</p>
+            </div>
+            <span id="voice-boost-status" class="text-[10px] px-2 py-0.5 rounded bg-white/5 text-zinc-400 font-bold">AUS</span>
+          </button>
+
+          <button id="drawer-silence-trim" onclick="toggleSilenceTrim()" class="p-3 rounded-2xl bg-obsidian-850 border border-white/10 hover:border-gold-500/35 flex items-center justify-between text-left transition">
+            <div>
+              <p class="text-xs font-semibold text-white flex items-center gap-1.5">
+                <i data-lucide="scissors" class="w-3.5 h-3.5 text-gold-400"></i> Stille kürzen
+              </p>
+              <p class="text-[10px] text-zinc-400 mt-0.5">Pausen beschleunigen</p>
+            </div>
+            <span id="silence-trim-status" class="text-[10px] px-2 py-0.5 rounded bg-white/5 text-zinc-400 font-bold">AUS</span>
+          </button>
+
+          <button onclick="cycleSleepTimer()" class="p-3 rounded-2xl bg-obsidian-850 border border-white/10 hover:border-gold-500/35 flex items-center justify-between text-left transition">
+            <div>
+              <p class="text-xs font-semibold text-white flex items-center gap-1.5">
+                <i data-lucide="moon" class="w-3.5 h-3.5 text-gold-400"></i> Sleep-Timer
+              </p>
+              <p class="text-[10px] text-zinc-400 mt-0.5">Autom. Stopp</p>
+            </div>
+            <span id="drawer-sleep-status" class="text-[10px] px-2 py-0.5 rounded bg-white/5 text-gold-300 font-bold">Aus</span>
+          </button>
+        </div>
+
+        <!-- Kapitelmarken -->
+        <div id="drawer-chapters-section" class="hidden space-y-2.5">
+          <h4 class="text-xs uppercase tracking-widest text-gold-400 font-semibold flex items-center gap-2">
+            <i data-lucide="bookmark" class="w-3.5 h-3.5"></i> Kapitelmarken & Sprungmarken
+          </h4>
+          <div id="drawer-chapters-list" class="grid grid-cols-1 gap-1.5 max-h-48 overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- Shownotes -->
+        <div class="space-y-2">
+          <h4 class="text-xs uppercase tracking-widest text-zinc-400 font-semibold">Shownotes & Beschreibung</h4>
+          <div id="drawer-description" class="text-sm text-zinc-300 leading-relaxed bg-obsidian-850/90 p-4 rounded-2xl border border-white/5 space-y-2 break-words">
+            Wähle eine Folge aus, um hier die Shownotes zu lesen.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PODCAST-DETAIL-MODAL -->
+  <div id="podcast-detail-modal" class="fixed inset-0 z-50 hidden bg-obsidian-950/90 backdrop-blur-2xl flex items-center justify-center p-0 sm:p-6">
+    <div class="w-full max-w-3xl bg-obsidian-900 border border-gold-500/35 rounded-t-3xl sm:rounded-3xl p-6 sm:p-8 max-h-[92vh] flex flex-col shadow-2xl">
+      <div class="flex items-center justify-between pb-4 border-b border-white/10">
+        <span class="text-xs uppercase tracking-[0.2em] text-gold-400 font-semibold">Podcast-Profil</span>
+        <button onclick="closePodcastDetailModal()" aria-label="Podcast-Profil schließen" class="p-2 rounded-full bg-white/5 hover:bg-white/10 text-zinc-300">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="podcast-detail-body" class="overflow-y-auto py-5 space-y-6 pr-1"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: RSS-FEED ODER OPML HINZUFÜGEN -->
+  <div id="rss-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="w-full max-w-lg bg-obsidian-900 border border-gold-500/35 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="text-[11px] uppercase tracking-[0.2em] text-gold-400 font-semibold">Universeller Import</span>
+          <h3 class="font-serif text-2xl font-bold text-white mt-0.5">RSS-Feed oder OPML</h3>
+        </div>
+        <button onclick="closeRssModal()" aria-label="Import-Fenster schließen" class="p-2 rounded-full bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleAddRssSubmit(event)" class="space-y-3">
+        <label class="block text-xs font-medium text-zinc-300">Direkte RSS-Feed-URL (auch geschützte Unterstützer-Feeds)</label>
+        <input
+          id="rss-url-input"
+          type="url"
+          required
+          placeholder="https://beispiel.de/podcast/feed.xml"
+          class="w-full px-4 py-3 rounded-xl bg-obsidian-850 border border-white/10 focus:border-gold-400 focus:outline-none text-sm text-white placeholder-zinc-500"
+        />
+        <button type="submit" id="btn-rss-submit" class="w-full gold-btn py-3 rounded-xl text-sm flex items-center justify-center gap-2">
+          <i data-lucide="rss" class="w-4 h-4"></i>
+          Feed prüfen & als Favorit speichern
+        </button>
+      </form>
+
+      <div class="relative flex py-1 items-center">
+        <div class="flex-grow border-t border-white/10"></div>
+        <span class="flex-shrink mx-3 text-xs text-zinc-500 uppercase tracking-wider">oder OPML-Datei</span>
+        <div class="flex-grow border-t border-white/10"></div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <label class="cursor-pointer py-3 px-4 rounded-xl bg-obsidian-850 hover:bg-obsidian-800 border border-white/10 text-xs font-medium text-zinc-200 flex items-center justify-center gap-2 transition">
+          <i data-lucide="upload" class="w-4 h-4 text-gold-400"></i>
+          OPML importieren
+          <input type="file" accept=".opml,.xml" onchange="handleOpmlImport(event)" class="hidden" />
+        </label>
+        <button type="button" onclick="exportOpml()" class="py-3 px-4 rounded-xl bg-obsidian-850 hover:bg-obsidian-800 border border-white/10 text-xs font-medium text-zinc-200 flex items-center justify-center gap-2 transition">
+          <i data-lucide="download" class="w-4 h-4 text-gold-400"></i>
+          OPML exportieren
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HTML5 Audio-Element -->
+  <audio id="audio-element" preload="metadata" crossorigin="anonymous"></audio>
+
+  <script>
+    /**
+     * P-CAST 3.0 — Private Audio Lounge
+     * Kernverbesserungen:
+     * - Strenge XML/HTML-Fehlerseitenprüfung & Einzel-Feed-Status bei Refresh (kein Mehrfach-Trigger)
+     * - Umschaltung „VIP / Favoriten“ vs. „Alle Abos“ + „Verlauf / Zuletzt gehört“
+     * - Warteschlange mit Hoch/Runter-Sortierung & Leeren
+     * - Service Worker via Blob-URL mit sauberem Fallback + dynamisches PWA-Manifest
+     * - Tastatur-Shortcuts (Leertaste, Pfeil links/rechts) + Safe-Area-Layout
+     */
+
+    const STORAGE_KEY = 'pcast_v3_state';
+    const OFFLINE_CACHE_NAME = 'pcast-offline-audio-v1';
+    const FALLBACK_AUDIO = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+
+    const STARTER_PODCASTS = [
+      {
+        id: 'feed-tagesschau',
+        title: 'tagesschau in 100 Sekunden',
+        author: 'ARD / tagesschau',
+        feedUrl: 'https://www.tagesschau.de/multimedia/sendung/tagesschau_in_100_sekunden/podcast-ts100-audio-100~podcast.xml',
+        artwork: 'https://images.tagesschau.de/image/89045d82-5cd5-46ad-8f91-73911add30ee/AAABh3Yllz0/AAABibBx2rU/1x1-840/tagesschau-logo-100.jpg',
+        genre: 'Nachrichten',
+        pinned: true,
+        description: 'Die wichtigsten Nachrichten des Tages kompakt und zuverlässig in 100 Sekunden.'
+      },
+      {
+        id: 'feed-lagedernation',
+        title: 'Lage der Nation',
+        author: 'Philip Banse & Ulf Buermeyer',
+        feedUrl: 'https://feeds.lagedernation.org/feeds/ldn-mp3.xml',
+        artwork: 'https://lagedernation.org/wp-content/uploads/2021/01/LdN-Logo-3000x3000-1-1024x1024.jpg',
+        genre: 'Politik & Gesellschaft',
+        pinned: true,
+        description: 'Der wöchentliche Politik-Podcast aus Berlin – fundiert, kritisch und konstruktiv.'
+      },
+      {
+        id: 'feed-lanzprecht',
+        title: 'LANZ & PRECHT',
+        author: 'ZDF',
+        feedUrl: 'https://feeds.megaphone.fm/lanzprecht',
+        artwork: 'https://placehold.co/400x400/18181D/D4AF37?text=LANZ+%26+PRECHT',
+        genre: 'Gesellschaft & Debatte',
+        pinned: false,
+        description: 'Markus Lanz und Richard David Precht sprechen über die großen gesellschaftlichen und politischen Fragen unserer Zeit.'
+      },
+      {
+        id: 'feed-methodisch',
+        title: 'Methodisch inkorrekt!',
+        author: 'Nicolas Wöhrl & Reinhard Remfort',
+        feedUrl: 'https://minkorrekt.de/feed/mp3/',
+        artwork: 'https://minkorrekt.de/wp-content/uploads/2022/08/minkorrekt_logo_2022.jpg',
+        genre: 'Wissenschaft',
+        pinned: false,
+        description: 'Der methodisch inkorrekte Wissenschaftspodcast mit aktuellen Studien und Experimenten.'
+      },
+      {
+        id: 'feed-darknetdiaries',
+        title: 'Darknet Diaries',
+        author: 'Jack Rhysider',
+        feedUrl: 'https://podcast.darknetdiaries.com/',
+        artwork: 'https://darknetdiaries.com/imgs/darknet-diaries-logo.jpg',
+        genre: 'Sicherheit & True Crime',
+        pinned: false,
+        description: 'Wahre Geschichten aus der dunklen Seite des Internets – Angriffe, Forensik und digitale Sicherheit.'
+      }
+    ];
+
+    const CURATED_DISCOVER = [
+      {
+        title: 'ZEIT ONLINE: Was jetzt?',
+        author: 'ZEIT ONLINE',
+        feedUrl: 'https://wasjetzt.podigee.io/feed/mp3',
+        artwork: 'https://placehold.co/400x400/18181D/D4AF37?text=Was+Jetzt%3F',
+        genre: 'Nachrichten'
+      },
+      {
+        title: 'Apokalypse & Filterkaffee',
+        author: 'Micky Beisenherz',
+        feedUrl: 'https://apokalypse-und-filterkaffee.podigee.io/feed/mp3',
+        artwork: 'https://placehold.co/400x400/18181D/F3E5AB?text=Filterkaffee',
+        genre: 'Nachrichten & Satire'
+      },
+      {
+        title: 'OMR Podcast',
+        author: 'Philipp Westermeyer',
+        feedUrl: 'https://omr.podigee.io/feed/mp3',
+        artwork: 'https://placehold.co/400x400/18181D/D4AF37?text=OMR+Podcast',
+        genre: 'Wirtschaft & Digital'
+      },
+      {
+        title: 'Geschichten aus der Geschichte',
+        author: 'Richard Hemmer & Daniel Meßner',
+        feedUrl: 'https://www.geschichte.fm/feed/mp3/',
+        artwork: 'https://placehold.co/400x400/18181D/F3E5AB?text=GAG',
+        genre: 'Geschichte'
+      },
+      {
+        title: 'Deutschlandfunk – Der Tag',
+        author: 'Deutschlandfunk',
+        feedUrl: 'https://www.deutschlandfunk.de/der-tag-100.rss',
+        artwork: 'https://assets.deutschlandfunk.de/FALLBACK-IMAGE/512x512.png',
+        genre: 'Hintergrund'
+      },
+      {
+        title: 'Logbuch:Netzpolitik',
+        author: 'Tim Pritlove & Linus Neumann',
+        feedUrl: 'https://feeds.metaebene.me/lnp/mp3',
+        artwork: 'https://placehold.co/400x400/18181D/D4AF37?text=LNP',
+        genre: 'Netzpolitik & Tech'
+      }
+    ];
+
+    let state = {
+      subscriptions: [],
+      episodes: [],
+      playedIds: [],
+      progressMap: {},
+      historyTimestamps: {}, // { episodeId: lastListenedMs }
+      offlineMap: {},
+      queue: [],
+      currentEpisode: null,
+      playbackRate: 1.0,
+      sleepTimerMode: 'off',
+      sleepEndTime: null,
+      voiceBoost: false,
+      silenceTrim: false,
+      activeView: 'home',
+      homeFilter: 'unplayed',
+      subTab: 'vip',        // 'vip' | 'all'
+      lastSyncAt: null
+    };
+
+    const audio = document.getElementById('audio-element');
+    let sleepInterval = null;
+    let downloadingIds = new Set();
+    let refreshingFeedIds = new Set();
+    let isRefreshingAll = false;
+    let activeObjectUrl = null;
+    let deferredInstallPrompt = null;
+
+    let audioCtx = null;
+    let sourceNode = null;
+    let voiceFilterNode = null;
+    let compressorNode = null;
+    let analyserNode = null;
+    let silenceTimer = null;
+
+    // --- INITIALISIERUNG ---
+    window.addEventListener('DOMContentLoaded', async () => {
+      lucide.createIcons();
+      setupPwaManifestAndServiceWorker();
+      loadState();
+      setupNavigation();
+      setupAudioEvents();
+      setupMediaSessionHandlers();
+      setupKeyboardShortcuts();
+      renderDiscoverCurated();
+      updateAudioEnhancementUI();
+      updateSyncTimeLabel();
+
+      if (state.subscriptions.length === 0) {
+        state.subscriptions = [...STARTER_PODCASTS];
+        state.episodes = createInstantFallbackEpisodes();
+        saveState();
+        renderAll();
+        await refreshAllFeeds(false);
+      } else {
+        switchView(state.activeView || 'home');
+        const fifteenMins = 15 * 60 * 1000;
+        if (!state.lastSyncAt || (Date.now() - state.lastSyncAt > fifteenMins)) {
+          refreshAllFeeds(false);
+        }
+      }
+
+      if (state.currentEpisode) {
+        loadEpisodeIntoPlayer(state.currentEpisode, false);
+      }
+    });
+
+    function createInstantFallbackEpisodes() {
+      const now = Date.now();
+      return [
+        {
+          id: 'ep-init-1',
+          podcastId: 'feed-tagesschau',
+          podcastTitle: 'tagesschau in 100 Sekunden',
+          podcastArtwork: STARTER_PODCASTS[0].artwork,
+          title: 'Aktuelle Nachrichten-Ausgabe: Wirtschaft, Europa & Technologie',
+          pubDate: new Date(now - 1000 * 60 * 25).toISOString(),
+          durationSec: 100,
+          duration: '01:40',
+          audioUrl: FALLBACK_AUDIO,
+          chapters: [{ time: 0, title: 'Schlagzeilen' }, { time: 45, title: 'Wirtschaft & Wetter' }],
+          description: '00:00 Schlagzeilen des Tages\n00:45 Wirtschaft, Technologie und Wettervorhersage.'
+        },
+        {
+          id: 'ep-init-2',
+          podcastId: 'feed-lagedernation',
+          podcastTitle: 'Lage der Nation',
+          podcastArtwork: STARTER_PODCASTS[1].artwork,
+          title: 'LdN Spezial: Digitale Souveränität, Energiepolitik und Reformen',
+          pubDate: new Date(now - 1000 * 60 * 60 * 4).toISOString(),
+          durationSec: 5295,
+          duration: '01:28:15',
+          audioUrl: FALLBACK_AUDIO,
+          chapters: [
+            { time: 0, title: 'Begrüßung & Überblick' },
+            { time: 620, title: 'Digitale Infrastruktur in Europa' },
+            { time: 2410, title: 'Hörerfragen & Fazit' }
+          ],
+          description: '00:00 Begrüßung & Überblick\n10:20 Digitale Infrastruktur in Europa\n40:10 Hörerfragen & Fazit'
+        },
+        {
+          id: 'ep-init-3',
+          podcastId: 'feed-lanzprecht',
+          podcastTitle: 'LANZ & PRECHT',
+          podcastArtwork: STARTER_PODCASTS[2].artwork,
+          title: 'Zukunft der Arbeit & Künstliche Intelligenz im Alltag',
+          pubDate: new Date(now - 1000 * 60 * 60 * 18).toISOString(),
+          durationSec: 3420,
+          duration: '57:00',
+          audioUrl: FALLBACK_AUDIO,
+          chapters: [],
+          description: 'Ein tiefgehendes Gespräch über gesellschaftlichen Wandel, Technologie und Verantwortung.'
+        },
+        {
+          id: 'ep-init-4',
+          podcastId: 'feed-methodisch',
+          podcastTitle: 'Methodisch inkorrekt!',
+          podcastArtwork: STARTER_PODCASTS[3].artwork,
+          title: 'Minkorrekt! – Quantenoptik, Tiefsee-Forschung und das Experiment der Woche',
+          pubDate: new Date(now - 1000 * 60 * 60 * 32).toISOString(),
+          durationSec: 8040,
+          duration: '02:14:00',
+          audioUrl: FALLBACK_AUDIO,
+          chapters: [],
+          description: 'Vier aktuelle wissenschaftliche Publikationen verständlich und unterhaltsam erklärt.'
+        }
+      ];
+    }
+
+    // --- PERSISTENZ ---
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('pcast_v2_state');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          state = { ...state, ...parsed };
+          if (!state.historyTimestamps) state.historyTimestamps = {};
+          if (!['vip', 'all'].includes(state.subTab)) state.subTab = 'vip';
+        }
+      } catch (e) {
+        console.warn('Fehler beim Laden des Zustands:', e);
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          subscriptions: state.subscriptions,
+          episodes: state.episodes.slice(0, 320),
+          playedIds: state.playedIds,
+          progressMap: state.progressMap,
+          historyTimestamps: state.historyTimestamps,
+          offlineMap: state.offlineMap,
+          queue: state.queue,
+          currentEpisode: state.currentEpisode,
+          playbackRate: state.playbackRate,
+          voiceBoost: state.voiceBoost,
+          silenceTrim: state.silenceTrim,
+          subTab: state.subTab,
+          lastSyncAt: state.lastSyncAt
+        }));
+      } catch (e) {
+        console.warn('LocalStorage Speicherlimit erreicht:', e);
+      }
+    }
+
+    // --- PWA MANIFEST & BLOB SERVICE WORKER ---
+    function setupPwaManifestAndServiceWorker() {
+      const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#09090B"/><circle cx="256" cy="256" r="170" fill="none" stroke="#D4AF37" stroke-width="24" opacity="0.35"/><circle cx="256" cy="256" r="110" fill="none" stroke="#F3E5AB" stroke-width="24" opacity="0.7"/><circle cx="256" cy="256" r="44" fill="#D4AF37"/></svg>`;
+      const iconUrl = 'data:image/svg+xml;base64,' + btoa(svgIcon);
+
+      const manifest = {
+        name: 'P-Cast — Private Audio Lounge',
+        short_name: 'P-Cast',
+        description: 'Alle Podcasts in einer luxuriösen App – mit VIP-Favoriten, Verlauf und Offline-Modus.',
+        start_url: window.location.href,
+        display: 'standalone',
+        background_color: '#09090B',
+        theme_color: '#09090B',
+        icons: [
+          { src: iconUrl, sizes: '192x192', type: 'image/svg+xml' },
+          { src: iconUrl, sizes: '512x512', type: 'image/svg+xml' }
+        ]
+      };
+
+      const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+      document.getElementById('pwa-manifest-link').href = URL.createObjectURL(manifestBlob);
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        document.getElementById('btn-install-pwa-desktop')?.classList.remove('hidden');
+        document.getElementById('btn-install-pwa-mobile')?.classList.remove('hidden');
+      });
+
+      // Service Worker über Blob-URL mit sauberem Fallback
+      if ('serviceWorker' in navigator && window.isSecureContext) {
+        try {
+          const swCode = `
+            const SW_CACHE = 'pcast-shell-v3';
+            self.addEventListener('install', (event) => {
+              self.skipWaiting();
+              event.waitUntil(caches.open(SW_CACHE).catch(() => {}));
+            });
+            self.addEventListener('activate', (event) => {
+              event.waitUntil(self.clients.claim());
+            });
+            self.addEventListener('fetch', (event) => {
+              if (event.request.method !== 'GET') return;
+              const url = event.request.url;
+              if (url.startsWith('blob:') || url.includes('soundhelix.com')) return;
+              event.respondWith(
+                fetch(event.request).catch(() => caches.match(event.request))
+              );
+            });
+          `;
+          const swBlob = new Blob([swCode], { type: 'application/javascript' });
+          const swUrl = URL.createObjectURL(swBlob);
+          navigator.serviceWorker.register(swUrl).catch(() => {});
+        } catch (err) {
+          // Sicherer Fallback ohne Unterbrechung der App
+        }
+      }
+    }
+
+    async function triggerPwaInstall() {
+      if (!deferredInstallPrompt) {
+        showToast('Hinweis: Nutze im Browser-Menü „Zum Startbildschirm hinzufügen“, um P-Cast zu installieren.', 'info');
+        return;
+      }
+      deferredInstallPrompt.prompt();
+      const { outcome } = await deferredInstallPrompt.userChoice;
+      if (outcome === 'accepted') {
+        showToast('P-Cast wird als App installiert.', 'success');
+      }
+      deferredInstallPrompt = null;
+    }
+
+    // --- TASTATUR-SHORTCUTS ---
+    function setupKeyboardShortcuts() {
+      document.addEventListener('keydown', (e) => {
+        const tag = e.target?.tagName?.toLowerCase();
+        const isEditable = tag === 'input' || tag === 'textarea' || e.target?.isContentEditable;
+        if (isEditable) return;
+
+        if (e.code === 'Space') {
+          e.preventDefault();
+          togglePlayPause();
+        } else if (e.code === 'ArrowLeft') {
+          e.preventDefault();
+          skipSeconds(-15);
+        } else if (e.code === 'ArrowRight') {
+          e.preventDefault();
+          skipSeconds(30);
+        } else if (e.code === 'Escape') {
+          closeAllModals();
+        }
+      });
+    }
+
+    function closeAllModals() {
+      document.getElementById('player-drawer')?.classList.add('hidden');
+      document.getElementById('podcast-detail-modal')?.classList.add('hidden');
+      document.getElementById('rss-modal')?.classList.add('hidden');
+      const chev = document.getElementById('drawer-chevron');
+      if (chev) chev.style.transform = 'rotate(0deg)';
+    }
+
+    // --- MEDIA SESSION API ---
+    function setupMediaSessionHandlers() {
+      if (!('mediaSession' in navigator)) return;
+
+      navigator.mediaSession.setActionHandler('play', () => audio.play().catch(() => {}));
+      navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+      navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+        skipSeconds(-(details.seekOffset || 15));
+      });
+      navigator.mediaSession.setActionHandler('seekforward', (details) => {
+        skipSeconds(details.seekOffset || 30);
+      });
+      navigator.mediaSession.setActionHandler('seekto', (details) => {
+        if (details.seekTime != null && !isNaN(details.seekTime)) {
+          audio.currentTime = details.seekTime;
+          updateTimeUI();
+        }
+      });
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        if (state.queue.length > 0) {
+          const nextId = state.queue.shift();
+          saveState();
+          playEpisodeById(nextId);
+        }
+      });
+    }
+
+    function updateMediaSessionMetadata(ep) {
+      if (!('mediaSession' in navigator) || !ep) return;
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: ep.title,
+        artist: ep.podcastTitle,
+        album: 'P-Cast Private Audio Lounge',
+        artwork: [
+          { src: ep.podcastArtwork || 'https://placehold.co/512x512/09090B/D4AF37?text=P-Cast', sizes: '512x512', type: 'image/jpeg' }
+        ]
+      });
+    }
+
+    function updateMediaSessionPosition() {
+      if (!('mediaSession' in navigator) || !audio.duration || isNaN(audio.duration)) return;
+      try {
+        navigator.mediaSession.setPositionState({
+          duration: audio.duration,
+          playbackRate: audio.playbackRate,
+          position: Math.min(audio.currentTime, audio.duration)
+        });
+      } catch (e) {}
+    }
+
+    // --- ROBUSTER FEED-PARSER MIT KORRUPTIONS- & HTML-FEHLERSEITEN-ERKENNUNG ---
+    async function fetchWithTimeout(url, timeoutMs = 8000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timer);
+        return res;
+      } catch (err) {
+        clearTimeout(timer);
+        throw err;
+      }
+    }
+
+    function isLikelyHtmlErrorPage(text) {
+      const sample = String(text || '').trim().slice(0, 600).toLowerCase();
+      if (sample.startsWith('<!doctype html') || sample.startsWith('<html')) {
+        return true;
+      }
+      if (sample.includes('<title>403') || sample.includes('<title>404') || sample.includes('<title>502') || sample.includes('<title>503') || sample.includes('cloudflare')) {
+        return true;
+      }
+      return false;
+    }
+
+    async function fetchFeedXmlString(feedUrl) {
+      const strategies = [
+        async () => {
+          const res = await fetchWithTimeout(`https://api.allorigins.win/get?url=${encodeURIComponent(feedUrl)}`, 8000);
+          if (!res.ok) throw new Error(`Proxy-Antwort ${res.status}`);
+          const data = await res.json();
+          if (!data || typeof data.contents !== 'string' || !data.contents.trim()) {
+            throw new Error('Leerer Feed-Inhalt');
+          }
+          return data.contents;
+        },
+        async () => {
+          const res = await fetchWithTimeout(`https://corsproxy.io/?${encodeURIComponent(feedUrl)}`, 8000);
+          if (!res.ok) throw new Error(`CORS-Proxy ${res.status}`);
+          return await res.text();
+        },
+        async () => {
+          const res = await fetchWithTimeout(feedUrl, 6000);
+          if (!res.ok) throw new Error(`Direktabruf ${res.status}`);
+          return await res.text();
+        }
+      ];
+
+      let lastError = null;
+      for (const strategy of strategies) {
+        try {
+          const xmlText = await strategy();
+          if (isLikelyHtmlErrorPage(xmlText)) {
+            throw new Error('Proxy lieferte eine HTML-Fehlerseite statt XML');
+          }
+          if (/<rss[\s>]|<feed[\s>]|<channel[\s>]/i.test(xmlText)) {
+            return xmlText;
+          }
+          throw new Error('Kein gültiges RSS- oder Atom-Dokument');
+        } catch (err) {
+          lastError = err;
+        }
+      }
+      throw lastError || new Error('Feed konnte über keinen Weg geladen werden');
+    }
+
+    async function fetchAndParseRss(feedUrl) {
+      const xmlText = await fetchFeedXmlString(feedUrl);
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(xmlText, 'text/xml');
+
+      if (xml.querySelector('parsererror')) {
+        throw new Error('XML-Syntaxfehler im Podcast-Feed');
+      }
+
+      const channel = xml.querySelector('channel') || xml.querySelector('feed');
+      if (!channel) {
+        throw new Error('Fehlendes Channel- oder Feed-Element');
+      }
+
+      const podcastTitle = channel.querySelector('title')?.textContent?.trim() || 'Unbekannter Podcast';
+      const author = getXmlTagText(channel, ['itunes:author', 'author', 'name']) || podcastTitle;
+      const description = stripHtml(getXmlTagText(channel, ['description', 'subtitle']) || '');
+      const itunesImg = getXmlTagAttr(channel, ['itunes:image', 'logo', 'icon'], 'href');
+      const stdImg = channel.querySelector('image > url')?.textContent?.trim();
+      const artwork = itunesImg || stdImg || `https://placehold.co/400x400/18181D/D4AF37?text=${encodeURIComponent(podcastTitle.slice(0, 12))}`;
+
+      const podcastId = 'feed-' + hashString(feedUrl);
+      const rawItems = Array.from(xml.querySelectorAll('item, entry'));
+      if (rawItems.length === 0) {
+        throw new Error('Der Feed enthält aktuell keine Episoden');
+      }
+
+      const episodes = rawItems.slice(0, 20).map((item, idx) => {
+        const epTitle = item.querySelector('title')?.textContent?.trim() || `Folge ${idx + 1}`;
+        const pubDateRaw = getXmlTagText(item, ['pubDate', 'published', 'updated']) || '';
+        const pubDate = pubDateRaw && !isNaN(Date.parse(pubDateRaw))
+          ? new Date(pubDateRaw).toISOString()
+          : new Date(Date.now() - idx * 86400000).toISOString();
+
+        const enclosure = item.querySelector('enclosure');
+        let audioUrl = enclosure?.getAttribute('url')?.trim() || '';
+        if (!audioUrl) {
+          const altLink = Array.from(item.querySelectorAll('link')).find(l => {
+            const type = (l.getAttribute('type') || '').toLowerCase();
+            const href = l.getAttribute('href') || '';
+            return type.startsWith('audio/') || /\.(mp3|m4a|ogg|opus|wav)(\?|$)/i.test(href);
+          });
+          audioUrl = altLink?.getAttribute('href')?.trim() || '';
+        }
+
+        const durationRaw = getXmlTagText(item, ['itunes:duration', 'duration']) || '';
+        const durationSec = parseDurationToSeconds(durationRaw);
+        const epImg = getXmlTagAttr(item, ['itunes:image'], 'href') || artwork;
+
+        const rawDesc = getXmlTagText(item, ['content:encoded', 'content', 'summary']) || item.querySelector('description')?.textContent || '';
+        const cleanDesc = stripHtml(rawDesc) || 'Keine Beschreibung vorhanden.';
+
+        const pscChapters = extractPscChapters(item);
+        const textChapters = extractTimestampsFromText(rawDesc);
+        const chapters = pscChapters.length > 0 ? pscChapters : textChapters;
+
+        const guid = item.querySelector('guid')?.textContent?.trim() || item.querySelector('id')?.textContent?.trim() || `${podcastId}-${idx}-${epTitle.slice(0, 18)}`;
+
+        return {
+          id: 'ep-' + hashString(guid),
+          podcastId,
+          podcastTitle,
+          podcastArtwork: epImg,
+          title: epTitle,
+          pubDate,
+          durationSec,
+          duration: durationSec > 0 ? formatSeconds(durationSec) : formatDurationString(durationRaw),
+          audioUrl,
+          chapters,
+          description: cleanDesc
+        };
+      }).filter(ep => Boolean(ep.audioUrl));
+
+      if (episodes.length === 0) {
+        throw new Error('Keine abspielbaren Audio-Dateien im Feed gefunden');
+      }
+
+      return {
+        podcast: {
+          id: podcastId,
+          title: podcastTitle,
+          author,
+          feedUrl,
+          artwork,
+          genre: 'RSS-Feed',
+          pinned: false,
+          description
+        },
+        episodes
+      };
+    }
+
+    function getXmlTagText(parent, tagNames) {
+      for (const name of tagNames) {
+        const el = parent.getElementsByTagName(name)[0];
+        if (el && el.textContent) return el.textContent.trim();
+      }
+      return '';
+    }
+
+    function getXmlTagAttr(parent, tagNames, attr) {
+      for (const name of tagNames) {
+        const el = parent.getElementsByTagName(name)[0];
+        if (el && el.getAttribute(attr)) return el.getAttribute(attr).trim();
+      }
+      return '';
+    }
+
+    function extractPscChapters(item) {
+      const chapters = [];
+      const nodes = item.getElementsByTagName('psc:chapter');
+      for (let i = 0; i < nodes.length; i++) {
+        const start = nodes[i].getAttribute('start');
+        const title = nodes[i].getAttribute('title');
+        if (start && title) {
+          const sec = parseDurationToSeconds(start.split('.')[0]);
+          chapters.push({ time: sec, title: title.trim() });
+        }
+      }
+      return chapters;
+    }
+
+    function extractTimestampsFromText(rawHtmlOrText) {
+      const text = stripHtmlWithNewlines(rawHtmlOrText);
+      const lines = text.split('\n');
+      const chapters = [];
+      const regex = /(?:^|\s|\(|\[)(\d{1,2}:\d{2}(?::\d{2})?)(?:\)|\])?\s*[-–—:]?\s*(.{3,85})/;
+
+      for (const line of lines) {
+        const match = line.trim().match(regex);
+        if (match) {
+          const sec = parseDurationToSeconds(match[1]);
+          const label = match[2].replace(/https?:\/\/\S+/g, '').trim();
+          if (label.length >= 3 && !chapters.some(c => c.time === sec)) {
+            chapters.push({ time: sec, title: label });
+          }
+        }
+        if (chapters.length >= 30) break;
+      }
+      return chapters;
+    }
+
+    // Einzelner Feed-Refresh (z. B. aus Abos-Ansicht)
+    async function refreshSingleFeed(podcastId, event) {
+      if (event) event.stopPropagation();
+      const sub = state.subscriptions.find(s => s.id === podcastId);
+      if (!sub || refreshingFeedIds.has(podcastId)) return;
+
+      refreshingFeedIds.add(podcastId);
+      renderFavoritesView();
+      lucide.createIcons();
+
+      try {
+        const parsed = await fetchAndParseRss(sub.feedUrl);
+        sub.title = parsed.podcast.title || sub.title;
+        sub.author = parsed.podcast.author || sub.author;
+        if (parsed.podcast.description) sub.description = parsed.podcast.description;
+        if (parsed.podcast.artwork && !parsed.podcast.artwork.includes('placehold.co')) {
+          sub.artwork = parsed.podcast.artwork;
+        }
+
+        const otherEps = state.episodes.filter(e => e.podcastId !== sub.id);
+        const mappedEps = parsed.episodes.map(ep => ({
+          ...ep,
+          podcastId: sub.id,
+          podcastTitle: sub.title,
+          podcastArtwork: ep.podcastArtwork || sub.artwork
+        }));
+
+        state.episodes = [...mappedEps, ...otherEps].sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+        state.lastSyncAt = Date.now();
+        saveState();
+        updateSyncTimeLabel();
+        showToast(`„${sub.title}“ erfolgreich aktualisiert (${mappedEps.length} Folgen).`, 'success');
+      } catch (err) {
+        showToast(`Feed-Update für „${sub.title}“ fehlgeschlagen: ${err.message || 'Unbekannter Fehler'}.`, 'error');
+      } finally {
+        refreshingFeedIds.delete(podcastId);
+        renderAll();
+      }
+    }
+
+    // Alle Feeds aktualisieren mit Sperre gegen Mehrfach-Trigger & Fortschrittszähler
+    async function refreshAllFeeds(showNotification = true) {
+      if (isRefreshingAll || state.subscriptions.length === 0) return;
+
+      isRefreshingAll = true;
+      const total = state.subscriptions.length;
+      let completed = 0;
+      let successCount = 0;
+
+      const inlineSpinner = document.getElementById('refresh-status-inline');
+      const progressText = document.getElementById('refresh-progress-text');
+      const sideIcon = document.getElementById('icon-refresh-sidebar');
+      const mobIcon = document.getElementById('icon-refresh-mobile');
+      const sideLabel = document.getElementById('label-refresh-sidebar');
+      const mobLabel = document.getElementById('label-refresh-mobile');
+      const sideBtn = document.getElementById('btn-refresh-sidebar');
+      const mobBtn = document.getElementById('btn-refresh-mobile');
+
+      if (sideBtn) sideBtn.disabled = true;
+      if (mobBtn) mobBtn.disabled = true;
+      inlineSpinner?.classList.remove('hidden');
+      inlineSpinner?.classList.add('inline-flex');
+      sideIcon?.classList.add('animate-spin');
+      mobIcon?.classList.add('animate-spin');
+
+      const updateProgressDisplay = () => {
+        const text = `Aktualisiere Feeds (${completed}/${total})...`;
+        if (progressText) progressText.textContent = text;
+        if (sideLabel) sideLabel.textContent = `Lädt (${completed}/${total})`;
+        if (mobLabel) mobLabel.textContent = `${completed}/${total}`;
+      };
+
+      updateProgressDisplay();
+
+      const updatedEpisodesMap = new Map();
+      state.episodes.forEach(ep => updatedEpisodesMap.set(ep.id, ep));
+
+      await Promise.allSettled(
+        state.subscriptions.map(async (sub) => {
+          try {
+            const parsed = await fetchAndParseRss(sub.feedUrl);
+            sub.title = parsed.podcast.title || sub.title;
+            sub.author = parsed.podcast.author || sub.author;
+            if (parsed.podcast.description) sub.description = parsed.podcast.description;
+            if (parsed.podcast.artwork && !parsed.podcast.artwork.includes('placehold.co')) {
+              sub.artwork = parsed.podcast.artwork;
+            }
+            parsed.episodes.forEach(ep => {
+              const mapped = {
+                ...ep,
+                podcastId: sub.id,
+                podcastTitle: sub.title,
+                podcastArtwork: ep.podcastArtwork || sub.artwork
+              };
+              updatedEpisodesMap.set(mapped.id, mapped);
+            });
+            successCount++;
+          } catch (err) {
+            // Bestehende gecachte Folgen dieses Feeds bleiben erhalten
+          } finally {
+            completed++;
+            updateProgressDisplay();
+          }
+        })
+      );
+
+      state.episodes = Array.from(updatedEpisodesMap.values())
+        .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+      state.lastSyncAt = Date.now();
+      saveState();
+      updateSyncTimeLabel();
+      renderAll();
+
+      isRefreshingAll = false;
+      if (sideBtn) sideBtn.disabled = false;
+      if (mobBtn) mobBtn.disabled = false;
+      inlineSpinner?.classList.add('hidden');
+      inlineSpinner?.classList.remove('inline-flex');
+      sideIcon?.classList.remove('animate-spin');
+      mobIcon?.classList.remove('animate-spin');
+      if (sideLabel) sideLabel.textContent = 'Feeds aktualisieren';
+      if (mobLabel) mobLabel.textContent = '';
+
+      if (showNotification) {
+        if (successCount === 0) {
+          showToast('Kein Feed konnte aktuell geladen werden. Gespeicherte Folgen bleiben verfügbar.', 'error');
+        } else {
+          showToast(`${successCount} von ${total} Feeds erfolgreich aktualisiert.`, 'success');
+        }
+      }
+    }
+
+    function updateSyncTimeLabel() {
+      const el = document.getElementById('sidebar-sync-time');
+      if (!el) return;
+      if (!state.lastSyncAt) {
+        el.textContent = 'Bereit';
+        return;
+      }
+      const timeStr = new Date(state.lastSyncAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      el.textContent = `Stand ${timeStr} Uhr`;
+    }
+
+    // --- OFFLINE DOWNLOAD MANAGER (CACHE API) ---
+    async function toggleOfflineDownload(episodeId, event) {
+      if (event) event.stopPropagation();
+      const ep = state.episodes.find(e => e.id === episodeId);
+      if (!ep) return;
+
+      if (state.offlineMap[episodeId]) {
+        await removeOfflineDownload(episodeId);
+        return;
+      }
+
+      if (downloadingIds.has(episodeId)) return;
+      downloadingIds.add(episodeId);
+      renderAll();
+      showToast(`Lade „${ep.title.slice(0, 32)}“ für Offline-Nutzung...`, 'info');
+
+      try {
+        if (!('caches' in window)) {
+          throw new Error('Dieser Browser unterstützt keinen Offline-Cache.');
+        }
+        const cache = await caches.open(OFFLINE_CACHE_NAME);
+        const audioUrl = ep.audioUrl || FALLBACK_AUDIO;
+
+        let response = null;
+        try {
+          response = await fetchWithTimeout(audioUrl, 25000);
+          if (!response.ok) throw new Error('Direkter Download blockiert');
+        } catch (e) {
+          response = await fetchWithTimeout(`https://corsproxy.io/?${encodeURIComponent(audioUrl)}`, 25000);
+        }
+
+        if (!response || !response.ok) {
+          throw new Error('Audio-Stream blockiert CORS-Downloads – Streaming funktioniert weiterhin.');
+        }
+
+        const blob = await response.blob();
+        if (!blob || blob.size < 1024) {
+          throw new Error('Leere oder unvollständige Audio-Datei erhalten.');
+        }
+
+        const cacheKey = new Request(`https://pcast-offline.local/audio/${episodeId}`);
+        await cache.put(cacheKey, new Response(blob, {
+          headers: { 'Content-Type': blob.type || 'audio/mpeg' }
+        }));
+
+        state.offlineMap[episodeId] = {
+          sizeBytes: blob.size,
+          savedAt: Date.now()
+        };
+        saveState();
+        showToast(`Offline gespeichert (${formatBytes(blob.size)}).`, 'success');
+      } catch (err) {
+        showToast(err.message || 'Offline-Download fehlgeschlagen. Online-Stream ist weiterhin nutzbar.', 'error');
+      } finally {
+        downloadingIds.delete(episodeId);
+        renderAll();
+      }
+    }
+
+    async function removeOfflineDownload(episodeId) {
+      try {
+        if ('caches' in window) {
+          const cache = await caches.open(OFFLINE_CACHE_NAME);
+          await cache.delete(new Request(`https://pcast-offline.local/audio/${episodeId}`));
+        }
+      } catch (e) {}
+      delete state.offlineMap[episodeId];
+      saveState();
+      renderAll();
+      showToast('Offline-Datei entfernt.', 'info');
+    }
+
+    async function clearAllOfflineDownloads() {
+      try {
+        if ('caches' in window) {
+          await caches.delete(OFFLINE_CACHE_NAME);
+        }
+      } catch (e) {}
+      state.offlineMap = {};
+      saveState();
+      renderAll();
+      showToast('Alle Offline-Downloads wurden gelöscht.', 'info');
+    }
+
+    async function getOfflineAudioObjectUrl(episodeId) {
+      if (!state.offlineMap[episodeId] || !('caches' in window)) return null;
+      try {
+        const cache = await caches.open(OFFLINE_CACHE_NAME);
+        const match = await cache.match(new Request(`https://pcast-offline.local/audio/${episodeId}`));
+        if (!match) return null;
+        const blob = await match.blob();
+        if (activeObjectUrl) URL.revokeObjectURL(activeObjectUrl);
+        activeObjectUrl = URL.createObjectURL(blob);
+        return activeObjectUrl;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // --- WEB AUDIO API ENHANCEMENTS ---
+    function ensureWebAudioPipeline() {
+      if (audioCtx) {
+        if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+        return;
+      }
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
+        sourceNode = audioCtx.createMediaElementSource(audio);
+
+        voiceFilterNode = audioCtx.createBiquadFilter();
+        voiceFilterNode.type = 'peaking';
+        voiceFilterNode.frequency.value = 2800;
+        voiceFilterNode.Q.value = 1.1;
+        voiceFilterNode.gain.value = state.voiceBoost ? 6.5 : 0;
+
+        compressorNode = audioCtx.createDynamicsCompressor();
+        compressorNode.threshold.value = -24;
+        compressorNode.knee.value = 20;
+        compressorNode.ratio.value = state.voiceBoost ? 6 : 1;
+        compressorNode.attack.value = 0.005;
+        compressorNode.release.value = 0.2;
+
+        analyserNode = audioCtx.createAnalyser();
+        analyserNode.fftSize = 512;
+
+        sourceNode.connect(voiceFilterNode);
+        voiceFilterNode.connect(compressorNode);
+        compressorNode.connect(analyserNode);
+        analyserNode.connect(audioCtx.destination);
+      } catch (e) {
+        // Fallback auf direkte Wiedergabe ohne Web Audio Graph
+      }
+    }
+
+    function toggleVoiceBoost() {
+      state.voiceBoost = !state.voiceBoost;
+      ensureWebAudioPipeline();
+      if (voiceFilterNode && compressorNode) {
+        voiceFilterNode.gain.value = state.voiceBoost ? 6.5 : 0;
+        compressorNode.ratio.value = state.voiceBoost ? 6 : 1;
+      }
+      saveState();
+      updateAudioEnhancementUI();
+      showToast(state.voiceBoost ? 'Stimmen-Boost aktiviert.' : 'Stimmen-Boost deaktiviert.', 'info');
+    }
+
+    function toggleSilenceTrim() {
+      state.silenceTrim = !state.silenceTrim;
+      ensureWebAudioPipeline();
+      saveState();
+      updateAudioEnhancementUI();
+
+      clearInterval(silenceTimer);
+      if (state.silenceTrim) {
+        showToast('Stille-Kürzung aktiviert – Sprechpausen werden beschleunigt.', 'info');
+        const dataArray = new Uint8Array(analyserNode ? analyserNode.frequencyBinCount : 256);
+        silenceTimer = setInterval(() => {
+          if (!analyserNode || audio.paused || !state.silenceTrim) return;
+          analyserNode.getByteTimeDomainData(dataArray);
+          let sum = 0;
+          for (let i = 0; i < dataArray.length; i++) {
+            const val = (dataArray[i] - 128) / 128;
+            sum += val * val;
+          }
+          const rms = Math.sqrt(sum / dataArray.length);
+          if (rms < 0.012) {
+            audio.playbackRate = Math.max(state.playbackRate, 1.85);
+          } else if (audio.playbackRate !== state.playbackRate) {
+            audio.playbackRate = state.playbackRate;
+          }
+        }, 180);
+      } else {
+        audio.playbackRate = state.playbackRate;
+        showToast('Stille-Kürzung deaktiviert.', 'info');
+      }
+    }
+
+    function updateAudioEnhancementUI() {
+      const vbStatus = document.getElementById('voice-boost-status');
+      const vbBarBtn = document.getElementById('btn-voice-boost-bar');
+      const stStatus = document.getElementById('silence-trim-status');
+
+      if (vbStatus) {
+        vbStatus.textContent = state.voiceBoost ? 'AN' : 'AUS';
+        vbStatus.className = state.voiceBoost
+          ? 'text-[10px] px-2 py-0.5 rounded bg-gold-500 text-obsidian-950 font-bold'
+          : 'text-[10px] px-2 py-0.5 rounded bg-white/5 text-zinc-400 font-bold';
+      }
+      if (vbBarBtn) {
+        vbBarBtn.className = state.voiceBoost
+          ? 'hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-gold-500/20 border border-gold-500/40 text-xs text-gold-300 transition'
+          : 'hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-gold-500/15 border border-white/10 text-xs text-zinc-300 transition';
+      }
+      if (stStatus) {
+        stStatus.textContent = state.silenceTrim ? 'AN' : 'AUS';
+        stStatus.className = state.silenceTrim
+          ? 'text-[10px] px-2 py-0.5 rounded bg-gold-500 text-obsidian-950 font-bold'
+          : 'text-[10px] px-2 py-0.5 rounded bg-white/5 text-zinc-400 font-bold';
+      }
+    }
+
+    // --- VIP-FAVORITEN & ABONNEMENTS-VERWALTUNG ---
+    function setSubscriptionTab(tab) {
+      state.subTab = tab;
+      saveState();
+      updateSubscriptionTabButtons();
+      renderFavoritesView();
+      lucide.createIcons();
+    }
+
+    function updateSubscriptionTabButtons() {
+      const vipBtn = document.getElementById('tab-sub-vip');
+      const allBtn = document.getElementById('tab-sub-all');
+      if (!vipBtn || !allBtn) return;
+
+      if (state.subTab === 'vip') {
+        vipBtn.className = 'px-4 py-2 rounded-xl text-xs font-semibold bg-gold-500/20 text-gold-300 border border-gold-500/35 transition';
+        allBtn.className = 'px-4 py-2 rounded-xl text-xs font-medium text-zinc-400 hover:text-white transition';
+      } else {
+        allBtn.className = 'px-4 py-2 rounded-xl text-xs font-semibold bg-gold-500/20 text-gold-300 border border-gold-500/35 transition';
+        vipBtn.className = 'px-4 py-2 rounded-xl text-xs font-medium text-zinc-400 hover:text-white transition';
+      }
+    }
+
+    function togglePinPodcast(podcastId, event) {
+      if (event) event.stopPropagation();
+      const sub = state.subscriptions.find(s => s.id === podcastId);
+      if (!sub) return;
+      sub.pinned = !sub.pinned;
+      saveState();
+      renderAll();
+      showToast(sub.pinned ? `„${sub.title}“ als VIP markiert.` : `VIP-Markierung für „${sub.title}“ entfernt.`, 'success');
+    }
+
+    function openPodcastDetailModal(podcastId) {
+      const sub = state.subscriptions.find(s => s.id === podcastId);
+      if (!sub) return;
+
+      const modal = document.getElementById('podcast-detail-modal');
+      const body = document.getElementById('podcast-detail-body');
+      const podEpisodes = state.episodes.filter(e => e.podcastId === sub.id);
+
+      body.innerHTML = `
+        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 bg-obsidian-850/90 p-5 rounded-2xl border border-gold-500/20">
+          <img src="${sub.artwork}" onerror="this.src='https://placehold.co/300x300/18181D/D4AF37?text=P-Cast'" class="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover border border-gold-500/35 shrink-0 shadow-gold-sm" />
+          <div class="space-y-2 text-center sm:text-left flex-1 min-w-0">
+            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+              <span class="text-[11px] uppercase tracking-wider text-gold-400 font-semibold">${escapeHtml(sub.genre || 'Abo')}</span>
+              ${sub.pinned ? `<span class="px-2 py-0.5 rounded bg-gold-500/20 text-gold-300 text-[10px] font-bold">★ VIP-Favorit</span>` : ''}
+            </div>
+            <h3 class="font-serif text-2xl sm:text-3xl font-bold text-white">${escapeHtml(sub.title)}</h3>
+            <p class="text-xs text-zinc-400">von ${escapeHtml(sub.author)}</p>
+            <p class="text-xs sm:text-sm text-zinc-300 leading-relaxed pt-1">${escapeHtml(sub.description || '')}</p>
+            <div class="pt-3 flex flex-wrap justify-center sm:justify-start gap-2">
+              <button onclick="togglePinPodcast('${sub.id}'); openPodcastDetailModal('${sub.id}')" class="px-3.5 py-2 rounded-xl border ${sub.pinned ? 'bg-gold-500/20 border-gold-500/40 text-gold-300' : 'bg-white/5 border-white/10 text-zinc-200'} text-xs font-semibold flex items-center gap-1.5">
+                <i data-lucide="star" class="w-3.5 h-3.5 ${sub.pinned ? 'fill-current' : ''}"></i>
+                ${sub.pinned ? 'VIP aktiv' : 'Als VIP markieren'}
+              </button>
+              <button onclick="refreshSingleFeed('${sub.id}'); closePodcastDetailModal()" class="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-200 flex items-center gap-1.5">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-gold-400"></i> Feed laden
+              </button>
+              <button onclick="copyFeedUrl('${escapeHtml(sub.feedUrl)}')" class="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 flex items-center gap-1.5">
+                <i data-lucide="rss" class="w-3.5 h-3.5 text-gold-400"></i> RSS kopieren
+              </button>
+              <button onclick="unsubscribeByFeed('${escapeHtml(sub.feedUrl)}'); closePodcastDetailModal()" class="px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-xs text-red-300">
+                Abbestellen
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <h4 class="text-sm font-semibold text-zinc-200">Alle Episoden (${podEpisodes.length})</h4>
+            <input
+              type="text"
+              placeholder="Innerhalb dieses Podcasts filtern..."
+              oninput="filterPodcastModalEpisodes('${sub.id}', this.value)"
+              class="px-3.5 py-2 rounded-xl bg-obsidian-850 border border-white/10 focus:border-gold-400 focus:outline-none text-xs text-white placeholder-zinc-500 sm:w-64"
+            />
+          </div>
+          <div id="podcast-modal-episodes-list" class="space-y-3">
+            ${podEpisodes.map(ep => createEpisodeCardHtml(ep)).join('')}
+          </div>
+        </div>
+      `;
+
+      modal.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function filterPodcastModalEpisodes(podcastId, query) {
+      const container = document.getElementById('podcast-modal-episodes-list');
+      if (!container) return;
+      const q = query.toLowerCase().trim();
+      const eps = state.episodes.filter(e =>
+        e.podcastId === podcastId &&
+        (!q || e.title.toLowerCase().includes(q) || e.description.toLowerCase().includes(q))
+      );
+      container.innerHTML = eps.length
+        ? eps.map(ep => createEpisodeCardHtml(ep)).join('')
+        : `<p class="text-xs text-zinc-500 py-6 text-center">Keine passenden Episoden gefunden.</p>`;
+      lucide.createIcons();
+    }
+
+    function closePodcastDetailModal() {
+      document.getElementById('podcast-detail-modal').classList.add('hidden');
+    }
+
+    function copyFeedUrl(url) {
+      const temp = document.createElement('textarea');
+      temp.value = url;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
+      showToast('RSS-Feed-URL in die Zwischenablage kopiert.', 'success');
+    }
+
+    // --- NAVIGATION & ANSICHTEN ---
+    function setupNavigation() {
+      document.querySelectorAll('.nav-btn, .nav-btn-mobile').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const view = btn.getAttribute('data-view');
+          switchView(view);
+        });
+      });
+    }
+
+    function switchView(viewName) {
+      state.activeView = viewName;
+      saveState();
+
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.add('hidden'));
+      document.getElementById(`view-${viewName}`)?.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        const isActive = btn.getAttribute('data-view') === viewName;
+        btn.className = isActive
+          ? 'nav-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all bg-gold-500/15 text-gold-300 border border-gold-500/30'
+          : 'nav-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:text-zinc-100 hover:bg-white/5 transition-all';
+      });
+
+      document.querySelectorAll('.nav-btn-mobile').forEach(btn => {
+        const isActive = btn.getAttribute('data-view') === viewName;
+        btn.className = isActive
+          ? 'nav-btn-mobile flex flex-col items-center gap-1 py-1.5 px-2 rounded-xl text-gold-400 relative'
+          : 'nav-btn-mobile flex flex-col items-center gap-1 py-1.5 px-2 rounded-xl text-zinc-400 relative';
+      });
+
+      renderAll();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderAll() {
+      updateBadges();
+      updateSubscriptionTabButtons();
+      renderHomeView();
+      renderFavoritesView();
+      renderHistoryView();
+      renderOfflineView();
+      renderQueueView();
+      lucide.createIcons();
+    }
+
+    function getHistoryEpisodeIds() {
+      const idSet = new Set([
+        ...Object.keys(state.historyTimestamps || {}),
+        ...Object.keys(state.progressMap || {}),
+        ...(state.playedIds || [])
+      ]);
+      return Array.from(idSet)
+        .filter(id => state.episodes.some(e => e.id === id))
+        .sort((a, b) => (state.historyTimestamps[b] || 0) - (state.historyTimestamps[a] || 0));
+    }
+
+    function updateBadges() {
+      const unplayedCount = state.episodes.filter(ep => !state.playedIds.includes(ep.id)).length;
+      const offlineCount = Object.keys(state.offlineMap).length;
+      const historyCount = getHistoryEpisodeIds().length;
+
+      document.getElementById('badge-new-count').textContent = unplayedCount;
+      document.getElementById('badge-fav-count').textContent = state.subscriptions.length;
+      document.getElementById('badge-history-count').textContent = historyCount;
+      document.getElementById('badge-offline-count').textContent = offlineCount;
+      document.getElementById('badge-queue-count').textContent = state.queue.length;
+
+      const mobileQueueDot = document.getElementById('mobile-queue-dot');
+      if (state.queue.length > 0) mobileQueueDot.classList.remove('hidden');
+      else mobileQueueDot.classList.add('hidden');
+    }
+
+    function setHomeFilter(filterMode) {
+      state.homeFilter = filterMode;
+      document.querySelectorAll('.filter-pill').forEach(btn => {
+        const isActive = btn.getAttribute('data-filter') === filterMode;
+        btn.className = isActive
+          ? 'filter-pill px-3.5 py-2 rounded-xl text-xs font-semibold bg-gold-500/20 text-gold-300 border border-gold-500/35 shrink-0 transition'
+          : 'filter-pill px-3.5 py-2 rounded-xl text-xs font-medium bg-obsidian-850 text-zinc-400 hover:text-white border border-white/5 shrink-0 transition';
+      });
+      renderHomeView();
+      lucide.createIcons();
+    }
+
+    function getSortedSubscriptions() {
+      return [...state.subscriptions].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+    }
+
+    function renderHomeView() {
+      const strip = document.getElementById('home-favorites-strip');
+      const sortedSubs = getSortedSubscriptions();
+
+      if (sortedSubs.length === 0) {
+        strip.innerHTML = `<p class="text-xs text-zinc-500">Noch keine Favoriten oder Abos vorhanden.</p>`;
+      } else {
+        strip.innerHTML = sortedSubs.map(sub => `
+          <button onclick="openPodcastDetailModal('${sub.id}')" class="group relative flex flex-col items-center gap-2 shrink-0 w-20 text-center">
+            ${sub.pinned ? `<span class="absolute -top-1 right-1.5 z-10 w-5 h-5 rounded-full bg-gold-500 text-obsidian-950 flex items-center justify-center shadow-md"><i data-lucide="star" class="w-3 h-3 fill-current"></i></span>` : ''}
+            <div class="w-16 h-16 rounded-2xl p-[1.5px] ${sub.pinned ? 'bg-gradient-to-br from-gold-300 via-gold-500 to-gold-700 shadow-gold-sm' : 'bg-gradient-to-br from-gold-400/50 to-transparent group-hover:from-gold-400'} transition">
+              <img
+                src="${sub.artwork}"
+                onerror="this.src='https://placehold.co/200x200/18181D/D4AF37?text=P-Cast'"
+                alt="${escapeHtml(sub.title)}"
+                class="w-full h-full rounded-[14px] object-cover bg-obsidian-800"
+              />
+            </div>
+            <span class="text-[11px] ${sub.pinned ? 'text-gold-300 font-semibold' : 'text-zinc-300 group-hover:text-gold-300'} truncate w-full transition">${escapeHtml(sub.title)}</span>
+          </button>
+        `).join('');
+      }
+
+      const listEl = document.getElementById('home-episodes-list');
+      const counterEl = document.getElementById('home-episode-counter');
+      const pinnedIds = new Set(state.subscriptions.filter(s => s.pinned).map(s => s.id));
+
+      let list = [...state.episodes].sort((a, b) => {
+        const aPin = pinnedIds.has(a.podcastId) ? 1 : 0;
+        const bPin = pinnedIds.has(b.podcastId) ? 1 : 0;
+        if (aPin !== bPin) return bPin - aPin;
+        return new Date(b.pubDate) - new Date(a.pubDate);
+      });
+
+      const now = Date.now();
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+
+      if (state.homeFilter === 'unplayed') {
+        list = list.filter(ep => !state.playedIds.includes(ep.id));
+      } else if (state.homeFilter === 'week') {
+        list = list.filter(ep => !state.playedIds.includes(ep.id) && (now - new Date(ep.pubDate).getTime() <= sevenDays));
+      } else if (state.homeFilter === 'inprogress') {
+        list = list.filter(ep => !state.playedIds.includes(ep.id) && (state.progressMap[ep.id] || 0) > 10);
+      } else if (state.homeFilter === 'short') {
+        list = list.filter(ep => !state.playedIds.includes(ep.id) && ep.durationSec > 0 && ep.durationSec < 1800);
+      } else if (state.homeFilter === 'long') {
+        list = list.filter(ep => !state.playedIds.includes(ep.id) && ep.durationSec >= 3600);
+      } else if (state.homeFilter === 'offline') {
+        list = list.filter(ep => Boolean(state.offlineMap[ep.id]));
+      }
+
+      counterEl.textContent = `${list.length} ${list.length === 1 ? 'Folge' : 'Folgen'}`;
+
+      if (list.length === 0) {
+        listEl.innerHTML = `
+          <div class="glass-card rounded-3xl p-10 text-center space-y-4">
+            <div class="w-14 h-14 rounded-2xl bg-gold-500/10 border border-gold-500/25 flex items-center justify-center mx-auto">
+              <i data-lucide="sparkles" class="w-7 h-7 text-gold-400"></i>
+            </div>
+            <h3 class="font-serif text-xl font-bold text-white">Keine Folgen in diesem Filter</h3>
+            <p class="text-sm text-zinc-400 max-w-md mx-auto">
+              Wechsle den Filter oder entdecke neue Podcasts für deine Favoriten und Abos.
+            </p>
+            <div class="flex justify-center gap-3 pt-2">
+              <button onclick="setHomeFilter('all')" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-zinc-200">Alle Episoden zeigen</button>
+              <button onclick="switchView('discover')" class="gold-btn px-4 py-2 rounded-xl text-xs">Podcasts entdecken</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = list.map(ep => createEpisodeCardHtml(ep)).join('');
+    }
+
+    function createEpisodeCardHtml(ep) {
+      const isPlaying = state.currentEpisode && state.currentEpisode.id === ep.id && !audio.paused;
+      const isPlayed = state.playedIds.includes(ep.id);
+      const inQueue = state.queue.includes(ep.id);
+      const isOffline = Boolean(state.offlineMap[ep.id]);
+      const isDownloading = downloadingIds.has(ep.id);
+      const savedSec = state.progressMap[ep.id] || 0;
+      const isRecent = (Date.now() - new Date(ep.pubDate).getTime()) < 1000 * 60 * 60 * 48;
+      const sub = state.subscriptions.find(s => s.id === ep.podcastId);
+      const isVip = sub?.pinned;
+
+      return `
+        <article class="glass-card ${isVip ? 'vip-card' : ''} rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 ${isPlayed ? 'opacity-65' : ''}">
+          <div class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-white/10 shrink-0 group cursor-pointer bg-obsidian-800" onclick="playEpisodeById('${ep.id}')">
+            <img
+              src="${ep.podcastArtwork}"
+              onerror="this.src='https://placehold.co/200x200/18181D/D4AF37?text=P-Cast'"
+              alt="${escapeHtml(ep.podcastTitle)}"
+              class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+            />
+            <div class="absolute inset-0 bg-black/45 flex items-center justify-center opacity-95 group-hover:opacity-100 transition">
+              <div class="w-9 h-9 rounded-full gold-btn flex items-center justify-center shadow-lg">
+                <i data-lucide="${isPlaying ? 'pause' : 'play'}" class="w-4 h-4 fill-current ${isPlaying ? '' : 'ml-0.5'}"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="min-w-0 flex-1 space-y-1.5">
+            <div class="flex flex-wrap items-center gap-2 text-xs">
+              ${isVip ? `<span class="px-1.5 py-0.5 rounded bg-gold-500/20 border border-gold-500/35 text-gold-300 font-bold text-[10px]">★ VIP</span>` : ''}
+              ${!isPlayed && isRecent ? `<span class="px-2 py-0.5 rounded-md bg-gold-500 text-obsidian-950 font-bold text-[10px] uppercase tracking-wider">Neu</span>` : ''}
+              <button onclick="openPodcastDetailModal('${ep.podcastId}')" class="font-semibold text-gold-400 hover:underline truncate max-w-[200px]">${escapeHtml(ep.podcastTitle)}</button>
+              <span class="text-zinc-600">•</span>
+              <span class="text-zinc-400">${formatRelativeDate(ep.pubDate)}</span>
+              ${ep.duration ? `<span class="text-zinc-600">•</span><span class="text-zinc-400 font-mono text-[11px]">${escapeHtml(ep.duration)}</span>` : ''}
+              ${ep.chapters && ep.chapters.length > 0 ? `<span class="px-1.5 py-0.5 rounded bg-white/5 text-zinc-300 text-[10px]">${ep.chapters.length} Kapitel</span>` : ''}
+              ${savedSec > 10 && !isPlayed ? `<span class="text-gold-300 text-[11px] font-medium">(${formatSeconds(savedSec)} gehört)</span>` : ''}
+            </div>
+
+            <h3 onclick="playEpisodeById('${ep.id}')" class="font-semibold text-base sm:text-lg text-white hover:text-gold-300 cursor-pointer leading-snug line-clamp-2 transition">
+              ${escapeHtml(ep.title)}
+            </h3>
+
+            <p class="text-xs sm:text-sm text-zinc-400 line-clamp-2 leading-relaxed">
+              ${escapeHtml(ep.description)}
+            </p>
+          </div>
+
+          <div class="flex sm:flex-col items-center sm:items-end gap-2 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-white/5 justify-between sm:justify-center shrink-0">
+            <button onclick="playEpisodeById('${ep.id}')" class="gold-btn px-4 py-2 rounded-xl text-xs flex items-center gap-1.5">
+              <i data-lucide="${isPlaying ? 'pause' : 'play'}" class="w-3.5 h-3.5 fill-current"></i>
+              ${isPlaying ? 'Läuft' : 'Abspielen'}
+            </button>
+
+            <div class="flex items-center gap-1.5">
+              <button onclick="toggleOfflineDownload('${ep.id}', event)" title="${isOffline ? 'Offline gespeichert (Klick zum Löschen)' : 'Für Offline-Nutzung speichern'}" class="p-2 rounded-xl border ${isOffline ? 'bg-emerald-500/15 border-emerald-500/35 text-emerald-400' : 'bg-white/5 border-white/10 text-zinc-400 hover:text-gold-300'} transition">
+                ${isDownloading
+                  ? `<span class="block w-4 h-4 border-2 border-gold-400 border-t-transparent rounded-full animate-spin"></span>`
+                  : `<i data-lucide="${isOffline ? 'check-circle-2' : 'download'}" class="w-4 h-4"></i>`
+                }
+              </button>
+
+              <button onclick="toggleQueue('${ep.id}')" title="${inQueue ? 'Aus Warteschlange entfernen' : 'Zur Warteschlange hinzufügen'}" class="p-2 rounded-xl border ${inQueue ? 'bg-gold-500/20 border-gold-500/40 text-gold-300' : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white'} transition">
+                <i data-lucide="${inQueue ? 'list-checks' : 'list-plus'}" class="w-4 h-4"></i>
+              </button>
+
+              <button onclick="togglePlayed('${ep.id}')" title="${isPlayed ? 'Als ungespielt markieren' : 'Als gehört markieren'}" class="p-2 rounded-xl border ${isPlayed ? 'bg-gold-500/15 border-gold-500/30 text-gold-300' : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white'} transition">
+                <i data-lucide="check" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderFavoritesView() {
+      const grid = document.getElementById('favorites-grid');
+      const summary = document.getElementById('subscriptions-tab-summary');
+      const allSorted = getSortedSubscriptions();
+      const vipList = allSorted.filter(s => s.pinned);
+      const displayList = state.subTab === 'vip' ? vipList : allSorted;
+
+      if (summary) {
+        summary.textContent = state.subTab === 'vip'
+          ? `${vipList.length} VIP-Favoriten von ${allSorted.length} Abos`
+          : `${allSorted.length} abonnierte Podcasts`;
+      }
+
+      if (displayList.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full glass-card rounded-3xl p-10 text-center space-y-3">
+            <p class="text-zinc-300 font-medium">${state.subTab === 'vip' ? 'Noch keine VIP-Favoriten markiert.' : 'Noch keine Podcasts abonniert.'}</p>
+            <div class="flex justify-center gap-3 pt-1">
+              ${state.subTab === 'vip'
+                ? `<button onclick="setSubscriptionTab('all')" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-zinc-200">Alle Abos anzeigen</button>`
+                : `<button onclick="switchView('discover')" class="gold-btn px-5 py-2.5 rounded-xl text-xs">Podcasts entdecken</button>`
+              }
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = displayList.map(sub => {
+        const unplayedCount = state.episodes.filter(e => e.podcastId === sub.id && !state.playedIds.includes(e.id)).length;
+        const isRefreshingSingle = refreshingFeedIds.has(sub.id);
+
+        return `
+          <div onclick="openPodcastDetailModal('${sub.id}')" class="glass-card ${sub.pinned ? 'vip-card' : ''} rounded-2xl p-4 cursor-pointer flex flex-col justify-between gap-4 group">
+            <div class="flex items-start gap-3.5">
+              <img
+                src="${sub.artwork}"
+                onerror="this.src='https://placehold.co/300x300/18181D/D4AF37?text=P-Cast'"
+                alt="${escapeHtml(sub.title)}"
+                class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover border border-white/10 shrink-0 group-hover:border-gold-500/40 transition"
+              />
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-[10px] uppercase tracking-wider text-gold-400 font-semibold truncate">${escapeHtml(sub.genre || 'Abo')}</span>
+                  <button onclick="togglePinPodcast('${sub.id}', event)" title="${sub.pinned ? 'VIP-Markierung entfernen' : 'Als VIP markieren'}" class="p-1.5 rounded-lg ${sub.pinned ? 'text-gold-400 bg-gold-500/15' : 'text-zinc-500 hover:text-gold-300 bg-white/5'} transition shrink-0">
+                    <i data-lucide="star" class="w-3.5 h-3.5 ${sub.pinned ? 'fill-current' : ''}"></i>
+                  </button>
+                </div>
+                <h3 class="font-semibold text-white group-hover:text-gold-300 truncate mt-0.5 transition">${escapeHtml(sub.title)}</h3>
+                <p class="text-xs text-zinc-400 truncate mt-0.5">${escapeHtml(sub.author)}</p>
+                ${unplayedCount > 0 ? `<span class="inline-block mt-2 px-2 py-0.5 rounded-full bg-gold-500/20 text-gold-300 text-[10px] font-bold">${unplayedCount} neue Folgen</span>` : `<span class="inline-block mt-2 text-[10px] text-zinc-500">Aktuell</span>`}
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2.5 border-t border-white/5 text-xs" onclick="event.stopPropagation()">
+              <button onclick="refreshSingleFeed('${sub.id}', event)" class="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-gold-500/15 text-zinc-300 hover:text-gold-300 flex items-center gap-1.5 transition">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-gold-400 ${isRefreshingSingle ? 'animate-spin' : ''}"></i>
+                <span>${isRefreshingSingle ? 'Lädt...' : 'Aktualisieren'}</span>
+              </button>
+              <button onclick="unsubscribeByFeed('${escapeHtml(sub.feedUrl)}')" class="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-red-500/15 text-zinc-400 hover:text-red-300 transition">
+                Abbestellen
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderHistoryView() {
+      const container = document.getElementById('history-episodes-list');
+      const ids = getHistoryEpisodeIds();
+
+      if (ids.length === 0) {
+        container.innerHTML = `
+          <div class="glass-card rounded-3xl p-10 text-center space-y-3">
+            <i data-lucide="history" class="w-8 h-8 text-gold-400 mx-auto"></i>
+            <h3 class="font-serif text-xl font-bold text-white">Noch kein Hörverlauf vorhanden</h3>
+            <p class="text-sm text-zinc-400 max-w-md mx-auto">
+              Sobald du eine Episode startest, pausierst oder beendest, erscheint sie hier mit ihrem Fortschritt.
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = ids.map(id => {
+        const ep = state.episodes.find(e => e.id === id);
+        if (!ep) return '';
+        const isCompleted = state.playedIds.includes(id);
+        const savedSec = state.progressMap[id] || 0;
+        const pct = isCompleted ? 100 : (ep.durationSec > 0 ? Math.min(98, Math.round((savedSec / ep.durationSec) * 100)) : (savedSec > 0 ? 35 : 0));
+        const listenedAt = state.historyTimestamps[id];
+
+        return `
+          <div class="glass-card rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-4 min-w-0 flex-1">
+              <img src="${ep.podcastArtwork}" onerror="this.src='https://placehold.co/200x200/18181D/D4AF37?text=P-Cast'" class="w-16 h-16 rounded-xl object-cover border border-white/10 shrink-0" />
+              <div class="min-w-0 flex-1 space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-xs">
+                  <span class="text-gold-400 font-semibold truncate max-w-[180px]">${escapeHtml(ep.podcastTitle)}</span>
+                  <span class="text-zinc-600">•</span>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isCompleted ? 'bg-emerald-500/15 text-emerald-300' : 'bg-gold-500/15 text-gold-300'}">
+                    ${isCompleted ? 'Zuletzt beendet' : `Angefangen (${formatSeconds(savedSec)})`}
+                  </span>
+                  ${listenedAt ? `<span class="text-zinc-500 text-[11px]">${formatRelativeDate(new Date(listenedAt).toISOString())}</span>` : ''}
+                </div>
+                <h3 onclick="playEpisodeById('${ep.id}')" class="font-semibold text-base text-white hover:text-gold-300 truncate cursor-pointer transition">
+                  ${escapeHtml(ep.title)}
+                </h3>
+                <div class="w-full max-w-md h-1.5 rounded-full bg-white/10 overflow-hidden">
+                  <div class="h-full ${isCompleted ? 'bg-emerald-400' : 'bg-gold-500'} rounded-full" style="width: ${pct}%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+              <button onclick="playEpisodeById('${ep.id}')" class="gold-btn px-4 py-2 rounded-xl text-xs flex items-center gap-1.5">
+                <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+                ${isCompleted ? 'Erneut abspielen' : 'Weiterhören'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function clearHistory() {
+      state.historyTimestamps = {};
+      state.progressMap = {};
+      state.playedIds = [];
+      saveState();
+      renderAll();
+      showToast('Hörverlauf und Fortschritte geleert.', 'info');
+    }
+
+    function renderOfflineView() {
+      const listEl = document.getElementById('offline-episodes-list');
+      const sizeEl = document.getElementById('offline-storage-size');
+      const offlineIds = Object.keys(state.offlineMap);
+
+      const totalBytes = offlineIds.reduce((acc, id) => acc + (state.offlineMap[id]?.sizeBytes || 0), 0);
+      sizeEl.textContent = formatBytes(totalBytes);
+
+      const offlineEpisodes = offlineIds
+        .map(id => state.episodes.find(e => e.id === id))
+        .filter(Boolean);
+
+      if (offlineEpisodes.length === 0) {
+        listEl.innerHTML = `
+          <div class="glass-card rounded-3xl p-10 text-center space-y-3">
+            <i data-lucide="hard-drive-download" class="w-8 h-8 text-gold-400 mx-auto"></i>
+            <h3 class="font-serif text-xl font-bold text-white">Keine Offline-Downloads vorhanden</h3>
+            <p class="text-sm text-zinc-400 max-w-md mx-auto">
+              Speichere Folgen über das Download-Symbol, um sie ohne aktive Internetverbindung anzuhören.
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = offlineEpisodes.map(ep => createEpisodeCardHtml(ep)).join('');
+    }
+
+    function renderQueueView() {
+      const container = document.getElementById('queue-list');
+      const queuedEpisodes = state.queue
+        .map(id => state.episodes.find(e => e.id === id))
+        .filter(Boolean);
+
+      if (queuedEpisodes.length === 0) {
+        container.innerHTML = `
+          <div class="glass-card rounded-3xl p-10 text-center space-y-3">
+            <i data-lucide="list-music" class="w-8 h-8 text-gold-400 mx-auto"></i>
+            <h3 class="font-serif text-xl font-bold text-white">Deine Warteschlange ist leer</h3>
+            <p class="text-sm text-zinc-400">Füge Episoden über das Listen-Symbol hinzu, um sie nacheinander abzuspielen.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = queuedEpisodes.map((ep, index) => `
+        <div class="glass-card rounded-2xl p-4 flex items-center justify-between gap-3 sm:gap-4">
+          <div class="flex items-center gap-3 min-w-0 flex-1">
+            <span class="text-xs font-mono text-gold-400 w-5 text-center shrink-0">${index + 1}</span>
+            <img src="${ep.podcastArtwork}" onerror="this.src='https://placehold.co/150x150/18181D/D4AF37?text=P-Cast'" class="w-12 h-12 rounded-xl object-cover shrink-0" />
+            <div class="min-w-0">
+              <p class="text-xs text-gold-400 truncate">${escapeHtml(ep.podcastTitle)}</p>
+              <h4 onclick="playEpisodeById('${ep.id}')" class="text-sm font-semibold text-white hover:text-gold-300 truncate cursor-pointer">${escapeHtml(ep.title)}</h4>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button onclick="moveQueueItem(${index}, -1)" ${index === 0 ? 'disabled' : ''} title="Nach oben" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 disabled:opacity-30 text-zinc-300 transition">
+              <i data-lucide="arrow-up" class="w-4 h-4"></i>
+            </button>
+            <button onclick="moveQueueItem(${index}, 1)" ${index === queuedEpisodes.length - 1 ? 'disabled' : ''} title="Nach unten" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 disabled:opacity-30 text-zinc-300 transition">
+              <i data-lucide="arrow-down" class="w-4 h-4"></i>
+            </button>
+            <button onclick="playEpisodeById('${ep.id}')" title="Jetzt abspielen" class="p-2 rounded-xl gold-btn">
+              <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+            </button>
+            <button onclick="toggleQueue('${ep.id}')" title="Entfernen" class="p-2 rounded-xl bg-white/5 hover:bg-red-500/20 text-zinc-400 hover:text-red-300 transition">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function moveQueueItem(index, delta) {
+      const target = index + delta;
+      if (target < 0 || target >= state.queue.length) return;
+      const copy = [...state.queue];
+      const [item] = copy.splice(index, 1);
+      copy.splice(target, 0, item);
+      state.queue = copy;
+      saveState();
+      renderAll();
+    }
+
+    // --- UNIVERSELLE SUCHE & ABONNEMENT ---
+    async function handleSearchSubmit(e) {
+      e.preventDefault();
+      const term = document.getElementById('search-input').value.trim();
+      if (!term) return;
+      await searchPodcasts(term);
+    }
+
+    async function quickSearch(term) {
+      document.getElementById('search-input').value = term;
+      await searchPodcasts(term);
+    }
+
+    async function searchPodcasts(term) {
+      const resultsContainer = document.getElementById('discover-results');
+      const statusEl = document.getElementById('discover-status');
+      const titleEl = document.getElementById('discover-section-title');
+
+      titleEl.textContent = `Suchergebnisse für „${term}“`;
+      statusEl.textContent = 'Suche läuft...';
+      resultsContainer.innerHTML = Array(4).fill(`
+        <div class="rounded-2xl p-4 flex items-center gap-4 border border-white/5 bg-obsidian-850">
+          <div class="w-20 h-20 rounded-xl skeleton shrink-0"></div>
+          <div class="flex-1 space-y-2.5">
+            <div class="h-3 w-20 rounded skeleton"></div>
+            <div class="h-4 w-3/4 rounded skeleton"></div>
+            <div class="h-3 w-1/2 rounded skeleton"></div>
+          </div>
+        </div>
+      `).join('');
+
+      try {
+        const url = `https://itunes.apple.com/search?media=podcast&entity=podcast&country=DE&limit=16&term=${encodeURIComponent(term)}`;
+        const res = await fetchWithTimeout(url, 8000);
+        const data = await res.json();
+
+        if (!data.results || data.results.length === 0) {
+          statusEl.textContent = '0 Treffer';
+          resultsContainer.innerHTML = `
+            <div class="col-span-full glass-card rounded-2xl p-8 text-center space-y-3">
+              <p class="text-zinc-300 font-medium">Keine Podcasts unter diesem Suchbegriff gefunden.</p>
+              <button onclick="openRssModal()" class="gold-btn px-4 py-2 rounded-xl text-xs">RSS-Feed direkt hinzufügen</button>
+            </div>
+          `;
+          return;
+        }
+
+        statusEl.textContent = `${data.results.length} Podcasts gefunden`;
+        renderPodcastSearchCards(data.results.map(item => ({
+          title: item.collectionName || item.trackName,
+          author: item.artistName,
+          feedUrl: item.feedUrl,
+          artwork: item.artworkUrl600 || item.artworkUrl100,
+          genre: item.primaryGenreName || 'Podcast'
+        })).filter(p => p.feedUrl));
+      } catch (err) {
+        statusEl.textContent = 'Verzeichnis derzeit nicht erreichbar – Empfehlungen';
+        renderDiscoverCurated();
+      }
+    }
+
+    function renderDiscoverCurated() {
+      document.getElementById('discover-section-title').textContent = 'Kuratierte Top-Podcasts';
+      document.getElementById('discover-status').textContent = 'Sofort abonnierbar';
+      renderPodcastSearchCards(CURATED_DISCOVER);
+    }
+
+    function renderPodcastSearchCards(list) {
+      const container = document.getElementById('discover-results');
+      container.innerHTML = list.map(pod => {
+        const isSub = state.subscriptions.some(s => s.feedUrl === pod.feedUrl || s.title === pod.title);
+        const safePod = encodeURIComponent(JSON.stringify(pod));
+
+        return `
+          <div class="glass-card rounded-2xl p-4 flex items-center gap-4">
+            <img
+              src="${pod.artwork}"
+              onerror="this.src='https://placehold.co/300x300/18181D/D4AF37?text=Podcast'"
+              alt="${escapeHtml(pod.title)}"
+              class="w-20 h-20 rounded-xl object-cover border border-white/10 shrink-0 bg-obsidian-800"
+            />
+            <div class="min-w-0 flex-1">
+              <span class="text-[10px] uppercase tracking-wider text-gold-400 font-semibold">${escapeHtml(pod.genre)}</span>
+              <h4 class="font-semibold text-white text-sm sm:text-base truncate mt-0.5">${escapeHtml(pod.title)}</h4>
+              <p class="text-xs text-zinc-400 truncate">${escapeHtml(pod.author)}</p>
+              <div class="mt-3">
+                ${isSub
+                  ? `<button onclick="unsubscribeByFeed('${escapeHtml(pod.feedUrl)}')" class="px-3.5 py-1.5 rounded-xl bg-gold-500/15 border border-gold-500/40 text-gold-300 text-xs font-semibold flex items-center gap-1.5">
+                      <i data-lucide="check" class="w-3.5 h-3.5"></i> Abonniert
+                    </button>`
+                  : `<button onclick="subscribeFromSearch('${safePod}', this)" class="gold-btn px-3.5 py-1.5 rounded-xl text-xs flex items-center gap-1.5">
+                      <i data-lucide="plus" class="w-3.5 h-3.5"></i> Abonnieren
+                    </button>`
+                }
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    async function subscribeFromSearch(encodedPod, btnEl) {
+      const pod = JSON.parse(decodeURIComponent(encodedPod));
+      if (btnEl) {
+        btnEl.disabled = true;
+        btnEl.innerHTML = `<span class="w-3.5 h-3.5 border-2 border-obsidian-950 border-t-transparent rounded-full animate-spin"></span> Lade Feed...`;
+      }
+
+      try {
+        const parsed = await fetchAndParseRss(pod.feedUrl);
+        const newSub = {
+          id: parsed.podcast.id,
+          title: pod.title || parsed.podcast.title,
+          author: pod.author || parsed.podcast.author,
+          feedUrl: pod.feedUrl,
+          artwork: pod.artwork || parsed.podcast.artwork,
+          genre: pod.genre || 'Podcast',
+          pinned: false,
+          description: parsed.podcast.description
+        };
+
+        if (!state.subscriptions.some(s => s.feedUrl === newSub.feedUrl)) {
+          state.subscriptions.unshift(newSub);
+        }
+
+        const newEps = parsed.episodes.map(ep => ({
+          ...ep,
+          podcastId: newSub.id,
+          podcastTitle: newSub.title,
+          podcastArtwork: ep.podcastArtwork || newSub.artwork
+        }));
+
+        const map = new Map();
+        [...newEps, ...state.episodes].forEach(e => map.set(e.id, e));
+        state.episodes = Array.from(map.values()).sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+
+        saveState();
+        renderAll();
+        if (btnEl) {
+          btnEl.outerHTML = `<button onclick="unsubscribeByFeed('${escapeHtml(pod.feedUrl)}')" class="px-3.5 py-1.5 rounded-xl bg-gold-500/15 border border-gold-500/40 text-gold-300 text-xs font-semibold flex items-center gap-1.5">
+            <i data-lucide="check" class="w-3.5 h-3.5"></i> Abonniert
+          </button>`;
+          lucide.createIcons();
+        }
+        showToast(`„${newSub.title}“ abonniert!`, 'success');
+      } catch (err) {
+        const fallbackSub = {
+          id: 'feed-' + hashString(pod.feedUrl),
+          title: pod.title,
+          author: pod.author,
+          feedUrl: pod.feedUrl,
+          artwork: pod.artwork,
+          genre: pod.genre,
+          pinned: false,
+          description: 'Abonnierter Podcast.'
+        };
+        if (!state.subscriptions.some(s => s.feedUrl === fallbackSub.feedUrl)) {
+          state.subscriptions.unshift(fallbackSub);
+        }
+        saveState();
+        renderAll();
+        showToast(`„${pod.title}“ zu deinen Abos hinzugefügt (Feed wird beim nächsten Update erneut geprüft).`, 'info');
+      }
+    }
+
+    function unsubscribeByFeed(feedUrl) {
+      const sub = state.subscriptions.find(s => s.feedUrl === feedUrl);
+      if (!sub) return;
+      state.subscriptions = state.subscriptions.filter(s => s.feedUrl !== feedUrl);
+      state.episodes = state.episodes.filter(e => e.podcastId !== sub.id);
+      saveState();
+      renderAll();
+      showToast(`„${sub.title}“ abbestellt.`, 'info');
+    }
+
+    // --- RSS MODAL & OPML ---
+    function openRssModal() {
+      document.getElementById('rss-modal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('rss-url-input').focus(), 50);
+    }
+
+    function closeRssModal() {
+      document.getElementById('rss-modal').classList.add('hidden');
+    }
+
+    async function handleAddRssSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById('rss-url-input');
+      const btn = document.getElementById('btn-rss-submit');
+      const url = input.value.trim();
+      if (!url) return;
+
+      btn.disabled = true;
+      btn.innerHTML = `<span class="w-4 h-4 border-2 border-obsidian-950 border-t-transparent rounded-full animate-spin"></span> RSS-Feed wird geprüft...`;
+
+      try {
+        const parsed = await fetchAndParseRss(url);
+        if (!state.subscriptions.some(s => s.feedUrl === url)) {
+          state.subscriptions.unshift(parsed.podcast);
+        }
+        const map = new Map();
+        [...parsed.episodes, ...state.episodes].forEach(ep => map.set(ep.id, ep));
+        state.episodes = Array.from(map.values()).sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+
+        saveState();
+        renderAll();
+        input.value = '';
+        closeRssModal();
+        switchView('home');
+        showToast(`RSS-Feed „${parsed.podcast.title}“ hinzugefügt!`, 'success');
+      } catch (err) {
+        showToast(`Feed konnte nicht geladen werden: ${err.message || 'Bitte URL und Zugänglichkeit prüfen.'}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="rss" class="w-4 h-4"></i> Feed prüfen & als Favorit speichern`;
+        lucide.createIcons();
+      }
+    }
+
+    function exportOpml() {
+      const outlines = state.subscriptions.map(sub =>
+        `    <outline type="rss" text="${escapeXml(sub.title)}" title="${escapeXml(sub.title)}" xmlUrl="${escapeXml(sub.feedUrl)}" />`
+      ).join('\n');
+
+      const opml = `<?xml version="1.0" encoding="UTF-8"?>\n<opml version="2.0">\n  <head><title>P-Cast 3.0 Abonnements</title></head>\n  <body>\n${outlines}\n  </body>\n</opml>`;
+      const blob = new Blob([opml], { type: 'text/xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'p-cast-abos.opml';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('OPML-Datei mit deinen Abos heruntergeladen.', 'success');
+    }
+
+    function handleOpmlImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const parser = new DOMParser();
+          const xml = parser.parseFromString(e.target.result, 'text/xml');
+          const outlines = Array.from(xml.querySelectorAll('outline[xmlUrl]'));
+
+          if (outlines.length === 0) {
+            showToast('Keine gültigen RSS-Feeds in dieser OPML-Datei gefunden.', 'error');
+            return;
+          }
+
+          let added = 0;
+          outlines.forEach(node => {
+            const feedUrl = (node.getAttribute('xmlUrl') || '').trim();
+            const title = (node.getAttribute('title') || node.getAttribute('text') || 'Importierter Podcast').trim();
+            if (feedUrl && !state.subscriptions.some(s => s.feedUrl === feedUrl)) {
+              state.subscriptions.push({
+                id: 'feed-' + hashString(feedUrl),
+                title,
+                author: title,
+                feedUrl,
+                artwork: `https://placehold.co/400x400/18181D/D4AF37?text=${encodeURIComponent(title.slice(0, 10))}`,
+                genre: 'OPML-Import',
+                pinned: false,
+                description: 'Über OPML importierter Podcast.'
+              });
+              added++;
+            }
+          });
+
+          saveState();
+          closeRssModal();
+          showToast(`${added} neue Podcasts aus OPML importiert. Lade Folgen...`, 'success');
+          await refreshAllFeeds(true);
+        } catch (err) {
+          showToast('Fehler beim Einlesen der OPML-Datei.', 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // --- WARTESCHLANGE & STATUS ---
+    function toggleQueue(episodeId) {
+      const idx = state.queue.indexOf(episodeId);
+      if (idx > -1) {
+        state.queue.splice(idx, 1);
+        showToast('Aus Warteschlange entfernt.', 'info');
+      } else {
+        state.queue.push(episodeId);
+        showToast('Zur Warteschlange hinzugefügt.', 'success');
+      }
+      saveState();
+      renderAll();
+    }
+
+    function clearQueue() {
+      state.queue = [];
+      saveState();
+      renderAll();
+      showToast('Warteschlange geleert.', 'info');
+    }
+
+    function togglePlayed(episodeId) {
+      const idx = state.playedIds.indexOf(episodeId);
+      if (idx > -1) {
+        state.playedIds.splice(idx, 1);
+      } else {
+        state.playedIds.push(episodeId);
+        state.historyTimestamps[episodeId] = Date.now();
+      }
+      saveState();
+      renderAll();
+    }
+
+    function playAllNew() {
+      const unplayed = state.episodes.filter(ep => !state.playedIds.includes(ep.id));
+      if (unplayed.length === 0) {
+        showToast('Keine neuen ungehörten Folgen vorhanden.', 'info');
+        return;
+      }
+      state.queue = unplayed.slice(1).map(e => e.id);
+      saveState();
+      playEpisodeById(unplayed[0].id);
+      showToast(`Spiele ${unplayed.length} neue Folgen nacheinander ab.`, 'success');
+    }
+
+    // --- AUDIO PLAYER & KAPITELMARKEN ---
+    function playEpisodeById(episodeId) {
+      const ep = state.episodes.find(e => e.id === episodeId);
+      if (!ep) return;
+
+      if (state.currentEpisode && state.currentEpisode.id === ep.id) {
+        togglePlayPause();
+        return;
+      }
+
+      loadEpisodeIntoPlayer(ep, true);
+    }
+
+    async function loadEpisodeIntoPlayer(ep, autoplay = true) {
+      state.currentEpisode = ep;
+      if (autoplay) {
+        state.historyTimestamps[ep.id] = Date.now();
+      }
+      saveState();
+
+      document.getElementById('player-title').textContent = ep.title;
+      document.getElementById('player-podcast').textContent = ep.podcastTitle;
+      document.getElementById('player-cover').src = ep.podcastArtwork || 'https://placehold.co/200x200/18181D/D4AF37?text=P-Cast';
+
+      document.getElementById('drawer-title').textContent = ep.title;
+      document.getElementById('drawer-podcast').textContent = ep.podcastTitle;
+      document.getElementById('drawer-cover').src = ep.podcastArtwork || 'https://placehold.co/300x300/18181D/D4AF37?text=P-Cast';
+      document.getElementById('drawer-meta').textContent = `${formatRelativeDate(ep.pubDate)} ${ep.duration ? '• ' + ep.duration : ''}`;
+
+      const chapSec = document.getElementById('drawer-chapters-section');
+      const chapList = document.getElementById('drawer-chapters-list');
+      if (ep.chapters && ep.chapters.length > 0) {
+        chapSec.classList.remove('hidden');
+        chapList.innerHTML = ep.chapters.map(ch => `
+          <button onclick="jumpToTimestamp(${ch.time})" class="flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl bg-obsidian-850 hover:bg-gold-500/15 border border-white/5 hover:border-gold-500/35 text-left transition group">
+            <span class="text-xs text-zinc-200 group-hover:text-white truncate">${escapeHtml(ch.title)}</span>
+            <span class="text-[11px] font-mono text-gold-400 shrink-0">${formatSeconds(ch.time)}</span>
+          </button>
+        `).join('');
+      } else {
+        chapSec.classList.add('hidden');
+      }
+
+      document.getElementById('drawer-description').innerHTML = linkifyTimestamps(ep.description || 'Keine Shownotes verfügbar.');
+      updateMediaSessionMetadata(ep);
+
+      const offlineBlobUrl = await getOfflineAudioObjectUrl(ep.id);
+      audio.src = offlineBlobUrl || ep.audioUrl || FALLBACK_AUDIO;
+      audio.playbackRate = state.playbackRate;
+
+      const resumeTime = state.progressMap[ep.id] || 0;
+      audio.onloadedmetadata = () => {
+        if (resumeTime > 2 && resumeTime < audio.duration - 5) {
+          audio.currentTime = resumeTime;
+        }
+        updateTimeUI();
+        updateMediaSessionPosition();
+      };
+
+      if (autoplay) {
+        if (state.voiceBoost || state.silenceTrim) ensureWebAudioPipeline();
+        audio.play().catch(() => {
+          if (audio.src !== FALLBACK_AUDIO) {
+            audio.src = FALLBACK_AUDIO;
+            audio.play().catch(() => {
+              showToast('Audio-Stream konnte im Browser nicht gestartet werden.', 'error');
+            });
+            showToast('Hinweis: Original-Stream blockiert Browser-Zugriff – Beispiel-Audio aktiv.', 'info');
+          } else {
+            showToast('Wiedergabe konnte nicht gestartet werden. Bitte erneut versuchen.', 'error');
+          }
+        });
+      }
+      renderAll();
+    }
+
+    function jumpToTimestamp(seconds) {
+      if (!audio.src) return;
+      audio.currentTime = seconds;
+      if (audio.paused) audio.play().catch(() => {});
+      updateTimeUI();
+      showToast(`Sprung zu ${formatSeconds(seconds)}`, 'info');
+    }
+
+    function linkifyTimestamps(text) {
+      const escaped = escapeHtml(text).replace(/\n/g, '<br />');
+      return escaped.replace(/\b(\d{1,2}:\d{2}(?::\d{2})?)\b/g, (match) => {
+        const sec = parseDurationToSeconds(match);
+        return `<button onclick="jumpToTimestamp(${sec})" class="inline-flex items-center px-1.5 py-0.5 rounded bg-gold-500/15 hover:bg-gold-500/30 text-gold-300 font-mono text-xs font-semibold transition">${match}</button>`;
+      });
+    }
+
+    function togglePlayPause() {
+      if (!state.currentEpisode) {
+        if (state.episodes.length > 0) playEpisodeById(state.episodes[0].id);
+        return;
+      }
+      if (audio.paused) {
+        state.historyTimestamps[state.currentEpisode.id] = Date.now();
+        saveState();
+        if (state.voiceBoost || state.silenceTrim) ensureWebAudioPipeline();
+        audio.play().catch(() => {
+          showToast('Wiedergabe konnte nicht gestartet werden.', 'error');
+        });
+      } else {
+        audio.pause();
+      }
+    }
+
+    function skipSeconds(sec) {
+      if (!audio.src) return;
+      audio.currentTime = Math.max(0, Math.min(audio.duration || 0, audio.currentTime + sec));
+      updateTimeUI();
+      updateMediaSessionPosition();
+    }
+
+    function handleSeekInput(percent) {
+      if (!audio.duration) return;
+      audio.currentTime = (percent / 100) * audio.duration;
+      updateTimeUI();
+    }
+
+    function seekFromTopBar(event) {
+      if (!audio.duration) return;
+      const rect = event.currentTarget.getBoundingClientRect();
+      const ratio = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+      audio.currentTime = ratio * audio.duration;
+      updateTimeUI();
+    }
+
+    function setVolume(val) {
+      audio.volume = parseFloat(val);
+    }
+
+    function cyclePlaybackSpeed() {
+      const speeds = [0.8, 1.0, 1.2, 1.35, 1.5, 1.75, 2.0];
+      const nextIdx = (speeds.indexOf(state.playbackRate) + 1) % speeds.length;
+      state.playbackRate = speeds[nextIdx];
+      audio.playbackRate = state.playbackRate;
+      document.getElementById('btn-speed').textContent = state.playbackRate + 'x';
+      saveState();
+      updateMediaSessionPosition();
+    }
+
+    function cycleSleepTimer() {
+      const modes = ['off', '15', '30', '45', '60', 'end'];
+      const nextIdx = (modes.indexOf(state.sleepTimerMode) + 1) % modes.length;
+      state.sleepTimerMode = modes[nextIdx];
+
+      clearInterval(sleepInterval);
+      const label = document.getElementById('sleep-label');
+      const drawerLabel = document.getElementById('drawer-sleep-status');
+
+      if (state.sleepTimerMode === 'off') {
+        label.textContent = 'Aus';
+        drawerLabel.textContent = 'Aus';
+        showToast('Sleep-Timer deaktiviert.', 'info');
+        return;
+      }
+
+      if (state.sleepTimerMode === 'end') {
+        label.textContent = 'Ende';
+        drawerLabel.textContent = 'Folgenende';
+        showToast('Sleep-Timer stoppt am Ende der aktuellen Folge.', 'success');
+        return;
+      }
+
+      const mins = parseInt(state.sleepTimerMode, 10);
+      state.sleepEndTime = Date.now() + mins * 60 * 1000;
+      label.textContent = `${mins}m`;
+      drawerLabel.textContent = `${mins} Min.`;
+      showToast(`Sleep-Timer auf ${mins} Minuten gestellt.`, 'success');
+
+      sleepInterval = setInterval(() => {
+        const remaining = state.sleepEndTime - Date.now();
+        if (remaining <= 0) {
+          audio.pause();
+          state.sleepTimerMode = 'off';
+          label.textContent = 'Aus';
+          drawerLabel.textContent = 'Aus';
+          clearInterval(sleepInterval);
+          showToast('Sleep-Timer abgelaufen – Wiedergabe pausiert.', 'info');
+        } else {
+          const leftMin = Math.ceil(remaining / 60000);
+          label.textContent = `${leftMin}m`;
+          drawerLabel.textContent = `${leftMin} Min.`;
+        }
+      }, 5000);
+    }
+
+    function setupAudioEvents() {
+      audio.addEventListener('play', () => {
+        document.getElementById('icon-play-pause').setAttribute('data-lucide', 'pause');
+        document.getElementById('player-eq').classList.remove('hidden');
+        if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+        renderAll();
+      });
+
+      audio.addEventListener('pause', () => {
+        document.getElementById('icon-play-pause').setAttribute('data-lucide', 'play');
+        document.getElementById('player-eq').classList.add('hidden');
+        if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+        renderAll();
+      });
+
+      audio.addEventListener('timeupdate', () => {
+        updateTimeUI();
+        if (state.currentEpisode && Math.floor(audio.currentTime) % 5 === 0) {
+          state.progressMap[state.currentEpisode.id] = Math.floor(audio.currentTime);
+          state.historyTimestamps[state.currentEpisode.id] = Date.now();
+          saveState();
+        }
+      });
+
+      audio.addEventListener('ended', () => {
+        if (state.currentEpisode) {
+          if (!state.playedIds.includes(state.currentEpisode.id)) {
+            state.playedIds.push(state.currentEpisode.id);
+          }
+          state.historyTimestamps[state.currentEpisode.id] = Date.now();
+          delete state.progressMap[state.currentEpisode.id];
+          saveState();
+        }
+
+        if (state.sleepTimerMode === 'end') {
+          state.sleepTimerMode = 'off';
+          document.getElementById('sleep-label').textContent = 'Aus';
+          document.getElementById('drawer-sleep-status').textContent = 'Aus';
+          showToast('Folge beendet – Sleep-Timer hat gestoppt.', 'info');
+          renderAll();
+          return;
+        }
+
+        if (state.queue.length > 0) {
+          const nextId = state.queue.shift();
+          saveState();
+          playEpisodeById(nextId);
+        } else {
+          renderAll();
+        }
+      });
+    }
+
+    function updateTimeUI() {
+      const cur = audio.currentTime || 0;
+      const dur = audio.duration || 0;
+      const pct = dur > 0 ? (cur / dur) * 100 : 0;
+
+      document.getElementById('player-current-time').textContent = formatSeconds(cur);
+      document.getElementById('player-duration').textContent = formatSeconds(dur);
+      document.getElementById('player-seek').value = pct;
+      document.getElementById('player-top-progress').style.width = `${pct}%`;
+
+      document.getElementById('drawer-current-time').textContent = formatSeconds(cur);
+      document.getElementById('drawer-duration').textContent = formatSeconds(dur);
+      document.getElementById('drawer-seek').value = pct;
+    }
+
+    function togglePlayerDrawer() {
+      const drawer = document.getElementById('player-drawer');
+      const chevron = document.getElementById('drawer-chevron');
+      const isHidden = drawer.classList.contains('hidden');
+      if (isHidden) {
+        drawer.classList.remove('hidden');
+        chevron.style.transform = 'rotate(180deg)';
+      } else {
+        drawer.classList.add('hidden');
+        chevron.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    // --- HILFSFUNKTIONEN ---
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const borderClass = type === 'error'
+        ? 'border-red-500/45 text-red-200'
+        : type === 'success'
+        ? 'border-gold-500/50 text-gold-200'
+        : 'border-white/15 text-zinc-200';
+
+      toast.className = `pointer-events-auto glass-panel border ${borderClass} px-4 py-3 rounded-2xl shadow-xl text-xs font-medium flex items-center gap-2.5 transition-all duration-300 opacity-100`;
+      toast.innerHTML = `
+        <span class="w-2 h-2 rounded-full ${type === 'error' ? 'bg-red-400' : 'bg-gold-400'} shrink-0"></span>
+        <span>${escapeHtml(message)}</span>
+      `;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-8px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3600);
+    }
+
+    function parseDurationToSeconds(raw) {
+      if (!raw) return 0;
+      if (/^\d+$/.test(raw.trim())) return parseInt(raw.trim(), 10);
+      const parts = raw.trim().split(':').map(Number);
+      if (parts.some(isNaN)) return 0;
+      if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+      if (parts.length === 2) return parts[0] * 60 + parts[1];
+      return 0;
+    }
+
+    function formatSeconds(sec) {
+      if (!sec || isNaN(sec)) return '00:00';
+      const total = Math.floor(sec);
+      const h = Math.floor(total / 3600);
+      const m = Math.floor((total % 3600) / 60);
+      const s = total % 60;
+      if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function formatDurationString(raw) {
+      if (!raw) return '';
+      if (raw.includes(':')) return raw;
+      const secs = parseInt(raw, 10);
+      return isNaN(secs) ? raw : formatSeconds(secs);
+    }
+
+    function formatBytes(bytes) {
+      if (!bytes || bytes <= 0) return '0 MB';
+      const mb = bytes / (1024 * 1024);
+      return mb < 1 ? `${(bytes / 1024).toFixed(0)} KB` : `${mb.toFixed(1)} MB`;
+    }
+
+    function formatRelativeDate(isoString) {
+      const diffMs = Date.now() - new Date(isoString).getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins < 60) return `vor ${Math.max(1, diffMins)} Min.`;
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `vor ${diffHours} Std.`;
+      const diffDays = Math.floor(diffHours / 24);
+      if (diffDays === 1) return 'Gestern';
+      if (diffDays < 7) return `vor ${diffDays} Tagen`;
+      return new Date(isoString).toLocaleDateString('de-DE', { day: '2-digit', month: 'short' });
+    }
+
+    function stripHtml(html) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      return (tmp.textContent || tmp.innerText || '').replace(/\s+/g, ' ').trim();
+    }
+
+    function stripHtmlWithNewlines(html) {
+      const formatted = String(html)
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/p>/gi, '\n')
+        .replace(/<\/li>/gi, '\n');
+      const tmp = document.createElement('div');
+      tmp.innerHTML = formatted;
+      return (tmp.textContent || tmp.innerText || '').trim();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function escapeXml(str) {
+      return escapeHtml(str);
+    }
+
+    function hashString(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash |= 0;
+      }
+      return Math.abs(hash).toString(36);
+    }
+  </script>
+</body>
+</html>
